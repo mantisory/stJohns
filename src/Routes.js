@@ -4,16 +4,15 @@ import {BrowserRouter, Route} from 'react-router-dom';
 import App from './App';
 // import SignUpPage from './components/SignUpPage'
 // import hello from './components/Hello'
-import LoginPage from './components/LoginPage'
+import LoginForm from './components/LoginForm'
+import Register from './components/Register'
 
 export default(
     <BrowserRouter>
         <div>
             <Route  path="/" component={App}/>
-        {/* <Route path={SignUpPage} component={SignUpPage}/> */}
-            <Route path={"/LoginPage"} component={LoginPage}/>
+            <Route path={"/LoginForm"} component={LoginForm}/>
+            <Route path={"/Register"} component={Register}/>
         </div>
-        {/* <IndexRoute component={hello}></IndexRoute> */}
-       
     </BrowserRouter>
 )

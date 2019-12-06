@@ -1,9 +1,17 @@
 import React, { Component } from 'react'
-import LoginPage from './LoginPage';
 import { withStyles } from '@material-ui/core/styles';
 import propTypes from 'prop-types';
 import Calendar from './Calendar'
 
+
+import {  BrowserRouter as Router,
+    Switch,
+    Route,
+    Link,
+    Redirect,
+    useHistory,
+    useLocation} from 'react-router-dom';
+    
 const styles = theme => ({
     root: {
       flexGrow: 1,
@@ -19,9 +27,9 @@ const styles = theme => ({
 class Dashboard extends Component {
     render() {
         return (
-            <div >
-                <Calendar/>                
-            </div>
+           <div>
+               <Calendar />
+           </div>
         )
     }
 }

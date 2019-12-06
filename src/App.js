@@ -1,15 +1,18 @@
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';
-import Dashboard from './components/Dashboard';
+import Dashboard from './components/Dashboard.jsx';
 import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
 import {
     BrowserRouter as Router,
-    Switch,
-    Route,
-    Link
+  Switch,
+  Route, 
+  Redirect,
   } from "react-router-dom";
-
+  import LoginForm from './components/LoginForm'
+  import Register from './components/Register'
+  import Validate from './components/Validate'
+  
 const theme = createMuiTheme({
     palette: {
       common: {
@@ -21,15 +24,15 @@ const theme = createMuiTheme({
         'default': '#fafafa'
       },
       primary: {
-        light: 'rgba(129, 156, 169, 1)',
-        main: 'rgba(84, 110, 122, 1)',
-        dark: 'rgba(41, 67, 78, 1)',
+        light: '#428e92',
+        main: '#006064',
+        dark: '#00363a',
         contrastText: '#fff'
       },
       secondary: {
-        light: '#efefef',
-        main: '#bdbdbd',
-        dark: '#8d8d8d',
+        light: '#ffb04c',
+        main: '#f57f17',
+        dark: '#bc5100',
         contrastText: '#fff'
       },
       error: {
@@ -46,13 +49,53 @@ const theme = createMuiTheme({
       }
     }
 });
+
+function PrivateRoute({ children, ...rest }) {
+    return (
+      <Route
+        {...rest}
+        render={({ location }) =>
+          fakeAuth.isAuthenticated ? (
+            children
+          ) : (
+            <Redirect
+              to={{
+                pathname: "/LoginForm",
+                state: { from: location }
+              }}
+            />
+          )
+        }
+      />
+    );
+  }
+  
+  const fakeAuth = {
+    isAuthenticated: false,
+    authenticate(cb) {
+      fakeAuth.isAuthenticated = true;
+      setTimeout(cb, 100); // fake async
+    },
+    signout(cb) {
+      fakeAuth.isAuthenticated = false;
+      setTimeout(cb, 100);
+    }
+  };
+  
 function App() {
   return (
     <MuiThemeProvider theme={theme}>
+       {/* <PrivateRoute path="/"> */}
+       <div className="App">
        
-        <div className="App">
-            <Dashboard/>
+         
+               <Dashboard/>
+                             
+          
+          
         </div>
+       {/* </PrivateRoute> */}
+       
     </MuiThemeProvider>
   );
 }
