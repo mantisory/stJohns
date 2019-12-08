@@ -25,7 +25,7 @@ import { isAbsolute } from 'path';
 import { isTSExpressionWithTypeArguments } from '@babel/types';
 import { Z_FIXED } from 'zlib';
 import dataMethods from '../utils/data';
-
+import {connect} from 'react-redux';
 const styles = theme => ({
     content:{
         boxSizing:'border-box'
@@ -157,6 +157,7 @@ class Calendar extends Component {
 
     constructor(props){
         super(props);
+        console.log(props)
         this.state = {
             currentMonth : new Date(),
             selectedDate:new Date(),
@@ -172,7 +173,8 @@ class Calendar extends Component {
     }
 
     componentWillMount(){
-        dataMethods.getScheduledShifts(format(new Date(),'yyyy-MM-d')).then(res=>{
+        console.log(this.props)
+        dataMethods.getScheduledShifts(format(new Date(),'yyyy-MM-d'),this.props.UID).then(res=>{
          const shifts = [...this.state.selectedShifts];
             res.data.forEach(shift=>{
                 if(shift.UID === this.state.currentUser){
@@ -403,4 +405,7 @@ class Calendar extends Component {
 Calendar.propTypes = {
     classes: propTypes.object.isRequired
   };
-export default withStyles(styles)(Calendar)
+  const mapStateToProps = state =>({
+    user:state.auth.user
+})
+export default connect(mapStateToProps)( withStyles(styles)(Calendar));

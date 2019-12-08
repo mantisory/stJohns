@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
-import { createStore, applyMiddleware } from "redux";
+import { createStore, applyMiddleware, compose } from "redux";
 import thunk from "redux-thunk";
 import { Provider } from "react-redux";
 import {  BrowserRouter as Router,
@@ -18,32 +18,32 @@ import Register from './components/Register'
 import Validate from './components/Validate'
 import routes from './Routes';
 import DataMethods from './utils/data'
-
+import rootReducer from './rootReducer'
 
 const store = createStore(
-    (state = {}) => state,
-    applyMiddleware(thunk)
-    );
-    // console.log('loading')
-    const fakeAuth = {isAuthenticated:false}
+    rootReducer,
+    compose(
+      applyMiddleware(thunk),
+      window.devToolsExtension ? window.devToolsExtension() : f => f
+    )
+   );
+        console.log('in index')
 
-    const PrivateRoute = ({ component: Component, ...rest }) => (
-        <Route {...rest} render={(props) => (
-            DataMethods.isAuthenticated() === true
-                ? <Component {...props} />
-            : <Redirect to='/LoginForm' />
-    )} />
-)
+    
+
     const routing = (
+        <Provider store={store}>
         <Router>
           <div>
-            <PrivateRoute exact path="/" component={App} />
+              <App/>
+            {/* <PrivateRoute exact path="/" component={App} />
             <Route path="/LoginForm" component={LoginForm} />
             <Route path="/Register" component={Register} />
-            <Route path="/Validate" component={Validate} />
+            <Route path="/Validate" component={Validate} /> */}
             {/* <Route path="/contact" component={Contact} /> */}
           </div>
         </Router>
+        </Provider>
       )
 ReactDOM.render(routing, document.getElementById('root'));
 

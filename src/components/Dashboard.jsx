@@ -3,7 +3,6 @@ import { withStyles } from '@material-ui/core/styles';
 import propTypes from 'prop-types';
 import Calendar from './Calendar'
 
-
 import {  BrowserRouter as Router,
     Switch,
     Route,
@@ -36,4 +35,5 @@ class Dashboard extends Component {
 Dashboard.propTypes = {
     classes: propTypes.object.isRequired
   };
+
   export default withStyles(styles)(Dashboard);

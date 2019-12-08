@@ -4,8 +4,9 @@ const nodeServer = 'http://localhost:';
 const nodePort = 5000;
 let isAuth = false;
 const dataMethods = {
-    getScheduledShifts:(currentDate)=>{
-        return axios.get(nodeServer+nodePort+'/getScheduledShifts?selectedDate='+currentDate);
+    getScheduledShifts:(currentDate, UID)=>{
+        console.log(UID)
+        return axios.get(nodeServer+nodePort+'/getScheduledShiftsForUser?selectedDate='+currentDate+'&UID='+UID);
     },
     saveShifts:async(shifts, UID)=>{
         let shiftsSaved = shifts.map((shift)=>{
@@ -23,27 +24,7 @@ const dataMethods = {
             return 'success'
         })
     },
-    userLogin:async(payload)=>{
-        return axios.post(nodeServer+nodePort+'/userLogin',payload).then((results)=>{
-            let code;
-            switch(results.data.code){
-                case 200:
-                    
-                    isAuth = true;
-                    Cookies.set("stJohnsCookie",JSON.stringify({token:results.data.authenticationToken, expiry:results.data.tokenExpiryDate, first_name:results.data.first_name, last_name:results.data.last_name}))
-                    code = 200;
-                    break;
-              case 204:
-                      console.log('whoops')
-                      code = 204
-                      break;
-                      case "default":
-                          console.log('default')
-            }
-            return code;
-        
-        });
-    },
+   
     userRegister:(payload)=>{
         return axios.post(nodeServer+nodePort+'/userRegister', payload);
     },
@@ -51,15 +32,15 @@ const dataMethods = {
         
         return axios.post(nodeServer+nodePort+'/emailValidate', payload);
     },
-    
+    setIsAuthenticated:val=>{
+        isAuth = val;
+    },
     isAuthenticated:()=>{
         const cookie = Cookies.get('stJohnsCookie');
-        // console.log(cookie)
         if(cookie){
-             isAuth=true;
-        //     // cookie = JSON.parse(cookie);
-
+           isAuth=true;
         }
+        // isAuth=true;
         return isAuth;
     }
     // isAuthenticated:false

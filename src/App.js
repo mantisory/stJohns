@@ -1,5 +1,7 @@
-import React from 'react';
+import React,{useEffect} from 'react';
 import logo from './logo.svg';
+import Cookies from "js-cookie";
+import propTypes from 'prop-types'
 import './App.css';
 import Dashboard from './components/Dashboard.jsx';
 import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
@@ -12,7 +14,10 @@ import {
   import LoginForm from './components/LoginForm'
   import Register from './components/Register'
   import Validate from './components/Validate'
-  
+  import DataMethods from './utils/data'
+  import {connect} from 'react-redux';
+  import {renewSession} from './actions/login'
+
 const theme = createMuiTheme({
     palette: {
       common: {
@@ -50,54 +55,45 @@ const theme = createMuiTheme({
     }
 });
 
-function PrivateRoute({ children, ...rest }) {
-    return (
-      <Route
-        {...rest}
-        render={({ location }) =>
-          fakeAuth.isAuthenticated ? (
-            children
-          ) : (
-            <Redirect
-              to={{
-                pathname: "/LoginForm",
-                state: { from: location }
-              }}
-            />
-          )
-        }
-      />
-    );
-  }
+const PrivateRoute = ({ component: Component, ...rest }) => (
+        <Route {...rest} render={(props) => (
+            DataMethods.isAuthenticated() === true
+                ? <Component {...props} />
+            : <Redirect to='/LoginForm' />
+    )} />
+)
   
-  const fakeAuth = {
-    isAuthenticated: false,
-    authenticate(cb) {
-      fakeAuth.isAuthenticated = true;
-      setTimeout(cb, 100); // fake async
-    },
-    signout(cb) {
-      fakeAuth.isAuthenticated = false;
-      setTimeout(cb, 100);
+function App(props) {
+  
+   useEffect(() => {
+    
+    const userCookie = Cookies.get('stJohnsCookie');
+    // console.log(userCookie)
+    if(userCookie){
+        DataMethods.setIsAuthenticated(true);
+        props.renewSession(JSON.parse(userCookie))
     }
-  };
-  
-function App() {
+       
+   }, [])
+
   return (
     <MuiThemeProvider theme={theme}>
        {/* <PrivateRoute path="/"> */}
-       <div className="App">
-       
-         
-               <Dashboard/>
-                             
-          
-          
+       <div className="App"> 
+<Router>
+               <PrivateRoute exact path="/" component={Dashboard}/>
+               <Route path="/LoginForm" component={LoginForm} />
+            <Route path="/Register" component={Register} />
+            <Route path="/Validate" component={Validate} />
+            </Router>
         </div>
        {/* </PrivateRoute> */}
        
     </MuiThemeProvider>
   );
 }
+App.propTypes = {
+    renewSession: propTypes.func.isRequired
+}
 
-export default App;
+export default connect(null, {renewSession}) (App);
