@@ -19,6 +19,9 @@ import {
   import {renewSession} from './actions/login'
 
 const theme = createMuiTheme({
+    typography:{
+        fontFamily:['garamond-premier-pro', 'Georgia', 'Cambria', 'Times New Roman', 'Times', 'serif']
+    },
     palette: {
       common: {
         black: '#000',
@@ -30,15 +33,15 @@ const theme = createMuiTheme({
       },
       primary: {
         light: '#428e92',
-        main: '#006064',
+        main: '#c89f70',
         dark: '#00363a',
-        contrastText: '#fff'
+        contrastText: '#000'
       },
       secondary: {
         light: '#ffb04c',
         main: '#f57f17',
         dark: '#bc5100',
-        contrastText: '#fff'
+        contrastText: '#000'
       },
       error: {
         light: '#e57373',
@@ -51,7 +54,7 @@ const theme = createMuiTheme({
         secondary: 'rgba(0, 0, 0, 0.54)',
         disabled: 'rgba(0, 0, 0, 0.38)',
         hint: 'rgba(0, 0, 0, 0.38)'
-      }
+      },
     }
 });
 
@@ -80,11 +83,11 @@ function App(props) {
     <MuiThemeProvider theme={theme}>
        {/* <PrivateRoute path="/"> */}
        <div className="App"> 
-<Router>
-               <PrivateRoute exact path="/" component={Dashboard}/>
-               <Route path="/LoginForm" component={LoginForm} />
-            <Route path="/Register" component={Register} />
-            <Route path="/Validate" component={Validate} />
+            <Router>
+                <PrivateRoute exact path="/" component={Dashboard}/>
+                <Route path="/LoginForm" component={LoginForm} />
+                <Route path="/Register" component={Register} />
+                <Route path="/Validate" component={Validate} />
             </Router>
         </div>
        {/* </PrivateRoute> */}

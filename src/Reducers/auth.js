@@ -9,7 +9,6 @@ export default(state=initialState,action={})=>{
     
     switch(action.type){
         case SET_CURRENT_USER:
-            console.log(action.user)
             return {
                 isAuthenticated:true,
                 user:action.user

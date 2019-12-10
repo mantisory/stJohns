@@ -27,10 +27,7 @@ const store = createStore(
       window.devToolsExtension ? window.devToolsExtension() : f => f
     )
    );
-        console.log('in index')
-
     
-
     const routing = (
         <Provider store={store}>
         <Router>

@@ -5,7 +5,6 @@ const nodePort = 5000;
 let isAuth = false;
 const dataMethods = {
     getScheduledShifts:(currentDate, UID)=>{
-        console.log(UID)
         return axios.get(nodeServer+nodePort+'/getScheduledShiftsForUser?selectedDate='+currentDate+'&UID='+UID);
     },
     saveShifts:async(shifts, UID)=>{

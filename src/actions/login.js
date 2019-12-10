@@ -18,11 +18,9 @@ let isAuth = false;
     
         return dispatch =>{
             DataMethods.setIsAuthenticated(true);
-            // console.log('hello')
             return axios.get(nodeServer + nodePort + "/getUserForToken?token="+ cookie.token )
             .then(results =>{
-                console.log(results)
-                dispatch(setCurrentUser({ first_name:results.data.first_name, last_name:results.data.last_name, UID:results.data.UID}));
+                dispatch(setCurrentUser({  username:results.data.username, first_name:results.data.first_name, last_name:results.data.last_name, UID:results.data.UID}));
             })
             
         }
@@ -41,7 +39,7 @@ let isAuth = false;
                     }),
                     { expires: new Date(results.data.tokenExpiryDate) }
                     );
-                    dispatch(setCurrentUser({authToken:results.data.authenticationToken, first_name:results.data.first_name, last_name:results.data.last_name, UID:results.data.UID}))
+                    dispatch(setCurrentUser({authToken:results.data.authenticationToken, username:results.data.username, first_name:results.data.first_name, last_name:results.data.last_name, UID:results.data.UID}))
                     code = 200;
                     break;
                 case 204:

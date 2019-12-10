@@ -37,7 +37,7 @@ class LoginForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      userName: "",
+      username: "",
       password: "",
       isLoading: false,
       errorMessage: "",
@@ -48,7 +48,7 @@ class LoginForm extends Component {
   handleClick(event) {
 
     const payload = {
-      userName: this.state.userName,
+    username: this.state.username,
       password: this.state.password
     };
     
@@ -84,7 +84,7 @@ class LoginForm extends Component {
             <Grid item xs={6}>
               <TextField
                 label="UserName:"
-                onChange={event => this.setValue(event, "userName")}
+                onChange={event => this.setValue(event, "username")}
               />
             </Grid>
             <Grid item xs />
@@ -113,8 +113,7 @@ class LoginForm extends Component {
             <Grid item xs={6}>
               <Link to="/Register">
                 <Button
-                  label="Submit"
-                  onClick={event => this.handleRegister(event)}
+                  
                 >
                   Register
                 </Button>

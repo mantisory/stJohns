@@ -24,6 +24,7 @@ class Register extends Component {
       last_name: "",
       email: "",
       password: "",
+      username:"",
       errorMessage: "",
       successMessage:""
     };
@@ -31,6 +32,7 @@ class Register extends Component {
   handleClick = () => {
     const payload = {
       email: this.state.email,
+      username:this.state.username,
       first_name: this.state.first_name,
       last_name: this.state.last_name,
       password: this.state.password
@@ -60,6 +62,12 @@ class Register extends Component {
     const classes = this.props.classes;
     return (
       <div>
+            
+        <TextField
+          label="Username"
+          onChange={event => this.setValue(event, "username")}
+        />
+        <br/>
         <TextField
           helperText="Enter your First Name"
           label="First Name"
