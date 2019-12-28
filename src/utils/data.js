@@ -1,48 +1,110 @@
-import axios from 'axios';
-import Cookies from 'js-cookie'
-const nodeServer = 'http://localhost:';
+import axios from "axios";
+import Cookies from "js-cookie";
+const nodeServer = "http://localhost:";
 const nodePort = 5000;
+
 let isAuth = false;
-const dataMethods = {
-    getScheduledShifts:(currentDate, UID)=>{
-        return axios.get(nodeServer+nodePort+'/getScheduledShiftsForUser?selectedDate='+currentDate+'&UID='+UID);
+
+const dataMethods = (function() {
+    'use strict';
+  return {
+    checkValueExists: (valueName, value) => {
+      return axios.get(
+        nodeServer +
+          nodePort +
+          "/checkValueExists?valueName=" +
+          valueName +
+          "&value=" +
+          value
+      );
     },
-    saveShifts:async(shifts, UID)=>{
-        let shiftsSaved = shifts.map((shift)=>{
-            if(shift.shiftID) {
-                return axios.put(nodeServer+nodePort+'/updateShift?shiftID='+shift.shiftID+'&selectedDate='+shift.shiftDate + '&shiftValue='+shift.shiftValue).then((res)=>{
-                    return res;
-                })
-            }else{
-                axios.put(nodeServer+nodePort+'/addShift?UID='+UID+'&selectedDate='+shift.shiftDate + '&shiftValue='+shift.shiftValue).then((res)=>{
-                    return res;
-                })
-            }
-        });
-        return Promise.all(shiftsSaved).then((res)=>{
-            return 'success'
-        })
+
+    getScheduledShifts: (currentDate, UID) => {
+      return axios.get(
+        nodeServer +
+          nodePort +
+          "/getScheduledShiftsForUser?selectedDate=" +
+          currentDate +
+          "&UID=" +
+          UID
+      );
     },
-   
-    userRegister:(payload)=>{
-        return axios.post(nodeServer+nodePort+'/userRegister', payload);
+
+    getScheduledShiftsForAllUsers: currentDate => {
+      return axios.get(
+        nodeServer +
+          nodePort +
+          "/getScheduledShiftsForAllUsers?selectedDate=" +
+          currentDate
+      );
     },
-    emailValidate:(payload)=>{
-        
-        return axios.post(nodeServer+nodePort+'/emailValidate', payload);
-    },
-    setIsAuthenticated:val=>{
-        isAuth = val;
-    },
-    isAuthenticated:()=>{
-        const cookie = Cookies.get('stJohnsCookie');
-        if(cookie){
-           isAuth=true;
+
+    saveShifts: async (shifts, UID) => {
+        console.log('in data save')
+        console.log(shifts)
+      let shiftsSaved = shifts.map(shift => {
+        if (shift.scheduled_shift_ID) {
+          return axios
+            .put(
+              nodeServer +
+                nodePort +
+                "/updateShift?shiftID=" +
+                shift.scheduled_shift_ID +
+                "&selectedDate=" +
+                shift.scheduled_date +
+                "&shiftValue=" +
+                shift.scheduled_shift
+            )
+            .then(res => {
+              return res;
+            });
+        } else {
+          axios
+            .put(
+              nodeServer +
+                nodePort +
+                "/addShift?UID=" +
+                UID +
+                "&selectedDate=" +
+                shift.scheduled_date +
+                "&shiftValue=" +
+                shift.scheduled_shift
+            )
+            .then(res => {
+              return res;
+            });
         }
-        // isAuth=true;
-        return isAuth;
+      });
+      return Promise.all(shiftsSaved).then(res => {
+        return "success";
+      });
+    },
+
+    userRegister: payload => {
+      return axios.post(nodeServer + nodePort + "/userRegister", payload);
+    },
+
+    emailValidate: payload => {
+      return axios.post(nodeServer + nodePort + "/emailValidate", payload);
+    },
+
+    setIsAuthenticated: val => {
+      isAuth = val;
+    },
+
+    isAuthenticated: () => {
+      const cookie = Cookies.get("stJohnsCookie");
+      if (cookie) {
+        isAuth = true;
+      }
+
+      return isAuth;
+    },
+
+    userLogout: () => {
+        Cookies.remove('stJohnsCookie');
     }
-    // isAuthenticated:false
-}
+  };
+})();
 
 export default dataMethods;

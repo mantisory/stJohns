@@ -14,7 +14,8 @@ import {
   import LoginForm from './components/LoginForm'
   import Register from './components/Register'
   import Validate from './components/Validate'
-  import DataMethods from './utils/data'
+  import Admin from './components/Admin';
+  import dataMethods from './utils/data'
   import {connect} from 'react-redux';
   import {renewSession} from './actions/login'
 
@@ -60,7 +61,7 @@ const theme = createMuiTheme({
 
 const PrivateRoute = ({ component: Component, ...rest }) => (
         <Route {...rest} render={(props) => (
-            DataMethods.isAuthenticated() === true
+            dataMethods.isAuthenticated() === true
                 ? <Component {...props} />
             : <Redirect to='/LoginForm' />
     )} />
@@ -69,34 +70,36 @@ const PrivateRoute = ({ component: Component, ...rest }) => (
 function App(props) {
   
    useEffect(() => {
-    
     const userCookie = Cookies.get('stJohnsCookie');
-    // console.log(userCookie)
+    // test(props)
     if(userCookie){
-        DataMethods.setIsAuthenticated(true);
+        dataMethods.setIsAuthenticated(true);
         props.renewSession(JSON.parse(userCookie))
     }
-       
    }, [])
 
   return (
     <MuiThemeProvider theme={theme}>
-       {/* <PrivateRoute path="/"> */}
        <div className="App"> 
             <Router>
                 <PrivateRoute exact path="/" component={Dashboard}/>
+                {/* <PrivateRoute exact path="/Admin" component={Admin}/> */}
                 <Route path="/LoginForm" component={LoginForm} />
                 <Route path="/Register" component={Register} />
                 <Route path="/Validate" component={Validate} />
             </Router>
         </div>
-       {/* </PrivateRoute> */}
-       
+
     </MuiThemeProvider>
   );
 }
 App.propTypes = {
     renewSession: propTypes.func.isRequired
 }
+const mapStateToProps = state => {
+    return {
+      state: state
+    };
+  };
 
-export default connect(null, {renewSession}) (App);
+export default connect(mapStateToProps, {renewSession}) (App);

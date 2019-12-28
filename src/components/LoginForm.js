@@ -1,24 +1,29 @@
 import React, { Component } from "react";
-import {
-  BrowserRouter as Router,
-  Link,
-  Redirect,
-} from "react-router-dom";
+import { BrowserRouter as Router, Link, Redirect } from "react-router-dom";
 import Grid from "@material-ui/core/Grid";
 import propTypes from "prop-types";
 import { withStyles } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
+import Typography from "@material-ui/core/Typography";
 import GoogleLogin from "react-google-login";
 import FacebookLogin from "react-facebook-login";
 import dataMethods from "../utils/data";
-import {connect} from 'react-redux';
-import {login} from '../actions/login'
+import { connect } from "react-redux";
+import { login } from "../actions/login";
 const styles = theme => ({
   container: {
     display: "flex",
     flexWrap: "wrap"
+  },
+  content: {
+    margin: "0 auto",
+    paddingTop: 150,
+    position: "relative"
+  },
+  instructions: {
+    fontWeight: 500
   },
   textField: {
     marginLeft: theme.spacing(1),
@@ -41,44 +46,52 @@ class LoginForm extends Component {
       password: "",
       isLoading: false,
       errorMessage: "",
-      redirectToReferrer:false
+      redirectToReferrer: false
     };
   }
 
   handleClick(event) {
-
     const payload = {
-    username: this.state.username,
+      username: this.state.username,
       password: this.state.password
     };
-    
-    this.props.login(payload).then((result)=>{
-    switch(result){
-              case 200:
-                  this.setState({redirectToReferrer:true})
-                  break;
-            case 204:
-                    console.log('whoops')
-                    break;
-                    case "default":
-                        console.log('default')
-          }
-});
 
+    this.props.login(payload).then(result => {
+      switch (result) {
+        case 200:
+          this.setState({ redirectToReferrer: true });
+          break;
+        case 204:
+          break;
+        case "default":
+      }
+    });
   }
 
   setValue(event, value) {
     this.setState({ [value]: event.target.value });
   }
   render() {
-    const { from } = this.props.location.state || { from: { pathname: '/' } }
+    const classes = this.props.classes;
+    const { from } = this.props.location.state || { from: { pathname: "/" } };
     if (this.state.redirectToReferrer === true) {
-        return <Redirect to={from} />
-      }
+      return <Redirect to={from} />;
+    }
     return (
       <div>
-        <div>
-          <AppBar title="Login"></AppBar>
+        <div className={classes.content}>
+          {/* <AppBar title="Login"></AppBar> */}
+          <Grid container>
+            <Grid item xs={12}>
+              <Typography className={classes.instructions}>
+                Please enter your username and password.
+              </Typography>
+              <Typography className={classes.instructions}>
+                If you do not have an account, click the 'register' button
+                below.
+              </Typography>
+            </Grid>
+          </Grid>
           <Grid container spacing={3}>
             <Grid item xs />
             <Grid item xs={6}>
@@ -112,11 +125,7 @@ class LoginForm extends Component {
             <Grid item xs />
             <Grid item xs={6}>
               <Link to="/Register">
-                <Button
-                  
-                >
-                  Register
-                </Button>
+                <Button>Register</Button>
               </Link>
             </Grid>
             <Grid item xs />
@@ -130,4 +139,4 @@ LoginForm.propTypes = {
   classes: propTypes.object.isRequired,
   login: propTypes.func.isRequired
 };
-export default connect(null, {login}) (withStyles(styles)(LoginForm));
+export default connect(null, { login })(withStyles(styles)(LoginForm));

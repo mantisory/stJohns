@@ -4,12 +4,17 @@ import {
     Link,
     useLocation
   } from "react-router-dom";
-import DataMethods from '../utils/data'
-import {makeStyles, withTheme} from '@material-ui/core'
+import dataMethods from '../utils/data'
+import {makeStyles, withTheme, Grid, Typography} from '@material-ui/core'
 
 const useStyles = makeStyles(theme=>({
-    emailValidated:{display:'block'},
-    emailUnvalidated:{display:'none'}
+    emailValidated:{display:'block', textDecoration:'none', color:theme.palette.primary.contrastText, fontWeight:'bold'},
+    emailUnvalidated:{display:'none'},
+    content:{
+        margin: "0 auto",
+        paddingTop: 150,
+        position: "relative"
+    }
 }));
 
 function Validate(props) {
@@ -24,7 +29,7 @@ function Validate(props) {
         verificationCode:params.get("code")
     }
    
-    DataMethods.emailValidate(payload).then(result=>{
+    dataMethods.emailValidate(payload).then(result=>{
 if(result.data.code = 200){
     setEmailValidated(true);
     setMessage('Your email has been validated. Click <a href="/loginForm">here</a> to login.')
@@ -34,8 +39,18 @@ setMessage("Your email has not been validated.")
    });
     
     return (
-        <div>
+        <div className={classes.content}>
+            <Grid>
+                <Grid item xs={12}>
+                    <Typography className={classes.instructions}>
+                        Your email has now been validated. 
+                    </Typography>
+              </Grid>
+          <Grid item xs={12}>
+       
             <Link to="/LoginForm" className={emailValidated?classes.emailValidated:classes.emailUnvalidated}>Click here to log in.</Link>
+            </Grid>
+            </Grid>
         </div>
     )
 }

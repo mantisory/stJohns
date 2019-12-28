@@ -1,5 +1,8 @@
 import {combineReducers} from 'redux'
 import auth from './Reducers/auth'
+import shifts from "./Reducers/shifts";
+
 export default combineReducers({
-    auth
+    shifts:shifts,
+    auth:auth
 })
