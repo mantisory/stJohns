@@ -1,13 +1,19 @@
 import dataMethods from "../utils/data";
-import {GET_USER_DATA_BEGIN, GET_USER_DATA_SUCCESS} from './types'
+import {GET_USER_DATA_BEGIN, GET_USER_DATA_SUCCESS, GET_ALL_USERS, GET_ALL_USERS_SUCCESS, GET_ALL_SHIFTS_FOR_DATE, GET_ALL_SHIFTS_FOR_DATE_SUCCESS} from './types'
 import { format} from 'date-fns'
 
 function fetchUserData(currentDate, UID) {
   return dataMethods.getScheduledShifts(currentDate, UID);
 }
 function saveUserData(shifts, UID){
-    console.log('saveuserdata')
     return dataMethods.saveShifts(shifts, UID);
+}
+function fetchAllUsers(){
+    return dataMethods.getAllUsers();
+}
+
+function fetchAllShiftsForDate(currentDate){
+    return dataMethods.getScheduledShiftsForDate(currentDate)
 }
 
 export function getUserData(currentDate, UID) {
@@ -20,8 +26,27 @@ export function getUserData(currentDate, UID) {
    
   };
 }
+export function getAllUsers(){
+    return dispatch => {
+        return fetchAllUsers()
+        .then(results => {
+            dispatch(getAllUsersSuccess(results.data));
+            return results.data
+        })
+    }
+}
+
+export function getAllShiftsForDate(currentDate){
+    return dispatch => {
+        return fetchAllShiftsForDate(currentDate)
+        .then(results => {
+            dispatch(getAllShiftsForDateSuccess(results.data));
+            return results.data;
+        })
+    }
+}
+
 export function saveUserShifts(shifts, UID){
-    // console.log('in save action')
     return dispatch =>{
         return saveUserData(shifts, UID)
             .then(results=>{
@@ -30,11 +55,29 @@ export function saveUserShifts(shifts, UID){
             })
     }
 }
+
+
 export const getUserDataBegin = () => ({
   type: GET_USER_DATA_BEGIN,
   loading:true
 });
 
+export function getAllUsersSuccess(data){
+    return {
+        type:GET_ALL_USERS_SUCCESS,
+        loading:false,
+        users:[...data]
+    }
+}
+
+export function getAllShiftsForDateSuccess ( data ) {
+    // console.log(data)
+    return{
+    type:GET_ALL_SHIFTS_FOR_DATE_SUCCESS,
+    loading:false,
+    shifts:[...data.userData]
+    }
+}
 export function getUserDataSuccess(data) {
   return {
     type: GET_USER_DATA_SUCCESS,

@@ -29,7 +29,14 @@ const dataMethods = (function() {
           UID
       );
     },
-
+    getScheduledShiftsForDate:currentDate => {
+        return axios.get(
+            nodeServer +
+              nodePort +
+              "/getScheduledShiftsForDate?selectedDate=" +
+              currentDate
+          );
+    },
     getScheduledShiftsForAllUsers: currentDate => {
       return axios.get(
         nodeServer +
@@ -100,7 +107,13 @@ const dataMethods = (function() {
 
       return isAuth;
     },
-
+    getAllUsers:()=>{
+        return axios.get(nodeServer+nodePort+'/getAllUsers')
+    },
+    test: (props)=>{
+        console.log(props);
+        return true;
+    },
     userLogout: () => {
         Cookies.remove('stJohnsCookie');
     }

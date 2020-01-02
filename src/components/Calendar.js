@@ -17,7 +17,7 @@ import InputLabel from "@material-ui/core/InputLabel";
 import MenuItem from "@material-ui/core/MenuItem";
 import FormControl from "@material-ui/core/FormControl";
 import Button from "@material-ui/core/Button";
-import { Redirect } from "react-router-dom";
+import { Redirect, withRouter} from "react-router-dom";
 import propTypes from "prop-types";
 import { endOfMonth } from "date-fns/esm";
 import dataMethods from "../utils/data";
@@ -229,18 +229,19 @@ class Calendar extends Component {
       userDataRetrieved: false
     };
   }
-
+ 
   logout = () => {
     dataMethods.userLogout();
     this.setState({ loggedOut: true });
   };
 
-  adminScreen = () => {
-    this.setState({ adminMode: !this.state.adminMode });
-    if (this.state.adminMode) {
-      this.getScheduledShiftsForAllUsers();
-    }
-  };
+ 
+    routeChange = ()=> {
+        let path = `/Admin`;
+        // console.log(this.props)
+        this.props.history.push(path);
+      }
+
 
   getScheduledShiftsForAllUsers = () => {
     dataMethods
@@ -283,10 +284,10 @@ class Calendar extends Component {
           >
             <ChevronRight />
           </Grid>
-          {this.props.user.username.toLowerCase() == "admin" && (
+          {this.props.user.isAdmin && (
             <Grid item xs={2}>
               <Button
-                onClick={this.adminScreen}
+                onClick={this.routeChange}
                 className={
                   this.state.adminMode ? this.props.classes.adminMode : ""
                 }
@@ -364,7 +365,7 @@ class Calendar extends Component {
 
   handleShiftChange = day => e => {
     const shiftValue = e.target.value;
-    if (shiftValue == "0") {
+    if (shiftValue === "0") {
       return;
     }
     let shifts = [...this.state.selectedShifts];
@@ -404,7 +405,7 @@ class Calendar extends Component {
     this.state.selectedShifts.forEach(shift => {
       const scheduledShiftIndex = this.props.shifts.findIndex(
         scheduledShift => {
-          return scheduledShift.scheduled_date == shift.scheduled_date;
+          return scheduledShift.scheduled_date === shift.scheduled_date;
         }
       );
       if (scheduledShiftIndex > -1) {
@@ -424,12 +425,12 @@ class Calendar extends Component {
     let returnClass = "";
 
     const classes = this.props.classes;
-    if ((getDay(selectedDay) == day) != equal) returnClass = classes.hidden;
+    if ((getDay(selectedDay) === day) != equal) returnClass = classes.hidden;
 
     const theShift = this.state.scheduledShiftDays.findIndex(theShift => {
       return (
         isSameDay(new Date(theShift.scheduled_date), selectedDay) &&
-        theShift.shift == shiftNumber &&
+        theShift.shift === shiftNumber &&
         theShift.scheduled >= 2
       );
     });
@@ -509,8 +510,8 @@ class Calendar extends Component {
           if (volunteered.length > 0) console.log(volunteered);
         }
 
-        let isClosedDay = getDay(day) == 0 || getDay(day) == 1;
-        let isDayInCurrentMonth = getMonth(day) == getMonth(this.state.currentMonth);
+        let isClosedDay = getDay(day) === 0 || getDay(day) === 1;
+        let isDayInCurrentMonth = getMonth(day) === getMonth(this.state.currentMonth);
         days.push(
           <div
             className={classNames(
@@ -528,13 +529,13 @@ class Calendar extends Component {
             <div
               className={classNames(
                 classes.cellContent,
-                this.state.daySelected == formattedDate
+                this.state.daySelected === formattedDate
                   ? classes.cellContentHidden
                   : ""
               )}
             >
               <span className={classes.number}>{formattedDate}</span>
-              {shiftIndex > -1 && selectedShiftIndex == -1 && (
+              {shiftIndex > -1 && selectedShiftIndex === -1 && (
                 <div
                   className={
                     !this.state.adminMode
@@ -565,7 +566,7 @@ class Calendar extends Component {
               <div
                 className={classNames(
                   classes.cellTextContent,
-                  getDay(day) == 0 || getDay(day) == 1 ? "" : classes.hidden
+                  getDay(day) === 0 || getDay(day) === 1 ? "" : classes.hidden
                 )}
               >
                 Closed
@@ -575,7 +576,7 @@ class Calendar extends Component {
                   <div
                     className={
                       volunteered.findIndex(shift => {
-                        return shift.scheduled_shift == 1;
+                        return shift.scheduled_shift === 1;
                       }) < 0
                         ? classes.hidden
                         : ""
@@ -583,7 +584,7 @@ class Calendar extends Component {
                   >
                     5am - 10am:{" "}
                     {volunteered.findIndex(shift => {
-                      return shift.scheduled_shift == 1;
+                      return shift.scheduled_shift === 1;
                     }) > -1
                       ? volunteered[
                           volunteered.findIndex(shift => {
@@ -595,7 +596,7 @@ class Calendar extends Component {
                   <div
                     className={
                       volunteered.findIndex(shift => {
-                        return shift.scheduled_shift == 2;
+                        return shift.scheduled_shift === 2;
                       }) < 0
                         ? classes.hidden
                         : ""
@@ -603,7 +604,7 @@ class Calendar extends Component {
                   >
                     10am - 2pm:{" "}
                     {volunteered.findIndex(shift => {
-                      return shift.scheduled_shift == 2;
+                      return shift.scheduled_shift === 2;
                     }) > -1
                       ? volunteered[
                           volunteered.findIndex(shift => {
@@ -615,7 +616,7 @@ class Calendar extends Component {
                   <div
                     className={
                       volunteered.findIndex(shift => {
-                        return shift.scheduled_shift == 3;
+                        return shift.scheduled_shift === 3;
                       }) < 0
                         ? classes.hidden
                         : ""
@@ -623,7 +624,7 @@ class Calendar extends Component {
                   >
                     2pm - 4pm:{" "}
                     {volunteered.findIndex(shift => {
-                      return shift.scheduled_shift == 3;
+                      return shift.scheduled_shift === 3;
                     }) > -1
                       ? volunteered[
                           volunteered.findIndex(shift => {
@@ -635,7 +636,7 @@ class Calendar extends Component {
                   <div
                     className={
                       volunteered.findIndex(shift => {
-                        return shift.scheduled_shift == 4;
+                        return shift.scheduled_shift === 4;
                       }) < 0
                         ? classes.hidden
                         : ""
@@ -643,7 +644,7 @@ class Calendar extends Component {
                   >
                     4pm - 7pm:{" "}
                     {volunteered.findIndex(shift => {
-                      return shift.scheduled_shift == 4;
+                      return shift.scheduled_shift === 4;
                     }) > -1
                       ? volunteered[
                           volunteered.findIndex(shift => {
@@ -655,7 +656,7 @@ class Calendar extends Component {
                   <div
                     className={
                       volunteered.findIndex(shift => {
-                        return shift.scheduled_shift == 5;
+                        return shift.scheduled_shift === 5;
                       }) < 0
                         ? classes.hidden
                         : ""
@@ -663,7 +664,7 @@ class Calendar extends Component {
                   >
                     8am - 4pm:{" "}
                     {volunteered.findIndex(shift => {
-                      return shift.scheduled_shift == 5;
+                      return shift.scheduled_shift === 5;
                     }) > -1
                       ? volunteered[
                           volunteered.findIndex(shift => {
@@ -679,7 +680,7 @@ class Calendar extends Component {
             <div
               className={classNames(
                 classes.extraContent,
-                this.state.daySelected == formattedDate
+                this.state.daySelected === formattedDate
                   ? ""
                   : classes.hiddenContent
               )}
@@ -835,5 +836,5 @@ const mapStateToProps = state => {
 };
 
 export default connect(mapStateToProps, { saveUserShifts })(
-  withStyles(styles)(Calendar)
+  withRouter(withStyles(styles)(Calendar))
 );

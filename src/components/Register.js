@@ -66,17 +66,17 @@ class Register extends Component {
     };
 
     dataMethods.userRegister(payload).then(result => {
-      if (result.data.code == 301) {
+      if (result.data.code === 301) {
         this.setState({
           errorMessage:
             "This email already exists in the system, but the email is unvalidated "
         });
-      } else if (result.data.code == 302) {
+      } else if (result.data.code === 302) {
         this.setState({
           errorMessage:
             "This email already exists in the system. Would you like to reset your password? "
         });
-      } else if (result.data.code == 303) {
+      } else if (result.data.code === 303) {
         this.setState({
           errorMessage: "",
           successMessage:
@@ -92,7 +92,7 @@ class Register extends Component {
   setValueBlur(event, value) {
     event.persist();
     dataMethods.checkValueExists(value, event.target.value).then(result => {
-      if (result.data[0].count == 1) {
+      if (result.data[0].count === 1) {
         this.setState({ [value + "Exists"]: true, formInvalid:true});
         event.target.focus();
       } else {

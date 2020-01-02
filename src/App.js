@@ -66,12 +66,18 @@ const PrivateRoute = ({ component: Component, ...rest }) => (
             : <Redirect to='/LoginForm' />
     )} />
 )
-  
+const AdminRoute = ({ component: Component,User, ...rest }) => (
+    <Route {...rest} render={(props) => (
+        // dataMethods.isAuthenticated() && this.props.state.auth.user.isAdmin === true
+        dataMethods.isAuthenticated() && User.isAdmin
+            ? <Component {...props} />
+        : <Redirect to='/LoginForm' />
+)} />
+)
 function App(props) {
-  
+
    useEffect(() => {
     const userCookie = Cookies.get('stJohnsCookie');
-    // test(props)
     if(userCookie){
         dataMethods.setIsAuthenticated(true);
         props.renewSession(JSON.parse(userCookie))
@@ -83,7 +89,10 @@ function App(props) {
        <div className="App"> 
             <Router>
                 <PrivateRoute exact path="/" component={Dashboard}/>
-                {/* <PrivateRoute exact path="/Admin" component={Admin}/> */}
+                {props.state.auth.user && 
+                    <AdminRoute exact path="/Admin" component={Admin} User={props.state.auth.user}/>
+                }
+
                 <Route path="/LoginForm" component={LoginForm} />
                 <Route path="/Register" component={Register} />
                 <Route path="/Validate" component={Validate} />

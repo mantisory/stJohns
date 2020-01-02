@@ -23,7 +23,7 @@ let isAuth = false;
             dataMethods.setIsAuthenticated(true);
             return axios.get(nodeServer + nodePort + "/getUserForToken?token="+ cookie.token )
             .then(results =>{
-                dispatch(setCurrentUser({  username:results.data.username, first_name:results.data.first_name, last_name:results.data.last_name, UID:results.data.UID}));
+                dispatch(setCurrentUser({  username:results.data.username, first_name:results.data.first_name, last_name:results.data.last_name, UID:results.data.UID, isAdmin:results.data.isAdmin}));
                 dispatch(getUserData(format(new Date(),'yyyy-MM-d'),results.data.UID))
             })
             
@@ -38,7 +38,8 @@ let isAuth = false;
                 Cookies.set("stJohnsCookie", JSON.stringify({
                     token: results.data.authenticationToken
                 }), { expires: new Date(results.data.tokenExpiryDate) });
-                dispatch(setCurrentUser({ authToken: results.data.authenticationToken, username: results.data.username, first_name: results.data.first_name, last_name: results.data.last_name, UID: results.data.UID }));
+                console.log(results.data.isAdmin)
+                dispatch(setCurrentUser({ authToken: results.data.authenticationToken, username: results.data.username, first_name: results.data.first_name, last_name: results.data.last_name, UID: results.data.UID, isAdmin:results.data.isAdmin}));
                 dispatch(getUserData(format(new Date(),'yyyy-MM-d'),results.data.UID))
                 code = 200;
                 break;
