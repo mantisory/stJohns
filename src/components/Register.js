@@ -37,7 +37,11 @@ const styles = theme => ({
   formContainer:{
       width:'50%',
     margin:'0 33%'
-  }
+  },
+  header:{
+    background:theme.palette.primary.main,
+    height:50
+}
 });
 class Register extends Component {
   constructor(props) {
@@ -134,10 +138,15 @@ class Register extends Component {
     //   const classes = useTheme();
     const classes = this.props.classes;
     return (
+        <div>
+        <Grid container className={classes.header}>
+
+</Grid>
       <div className={classes.content}>
+             
         <Grid>
           <Grid item xs={12}>
-            <Typography className={classes.instructions}>
+            <Typography className={classes.instructions} variant="h6">
               Please enter your account details below and click the "Register"
               button. All fields are required.
             </Typography>
@@ -250,7 +259,7 @@ class Register extends Component {
               onClick={event => this.handleClick(event)}
               disabled={this.state.formInvalid}
             >
-              Submit
+              Register
             </Button>
           </Grid>
           <Grid item xs={12}>
@@ -260,6 +269,7 @@ class Register extends Component {
             <span className={classes.success}>{this.state.successMessage}</span>
           </Grid>
         </Grid>
+      </div>
       </div>
     );
   }

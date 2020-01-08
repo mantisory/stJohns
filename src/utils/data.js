@@ -47,8 +47,6 @@ const dataMethods = (function() {
     },
 
     saveShifts: async (shifts, UID) => {
-        console.log('in data save')
-        console.log(shifts)
       let shiftsSaved = shifts.map(shift => {
         if (shift.scheduled_shift_ID) {
           return axios
@@ -89,6 +87,15 @@ const dataMethods = (function() {
 
     userRegister: payload => {
       return axios.post(nodeServer + nodePort + "/userRegister", payload);
+    },
+
+    saveUserAdmin: userList => {
+      let usersUpdated = userList.map(user=>{
+          return axios.post(nodeServer + nodePort + "/updateUserAdmin",user).then(res=>res);
+      });
+      return Promise.all(usersUpdated).then(res=>{
+          return res;
+      })
     },
 
     emailValidate: payload => {

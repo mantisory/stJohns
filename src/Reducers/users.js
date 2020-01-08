@@ -1,8 +1,9 @@
-import {GET_ALL_USERS, GET_ALL_USERS_SUCCESS} from '../actions/types'
+import {GET_ALL_USERS, GET_ALL_USERS_SUCCESS,SAVE_USER_IS_ADMIN, SAVE_USER_IS_ADMIN_SUCCESS} from '../actions/types'
 const initialState = {
     users:[],
     loading:false,
-    error:null
+    error:null,
+    success:false
 }
 export default(state=initialState,action={})=>{
     switch (action.type){
@@ -17,6 +18,17 @@ export default(state=initialState,action={})=>{
                 ...state,
                 loading:false,
                 users: action.users
+            }
+        case SAVE_USER_IS_ADMIN:
+            return {
+                ...state,
+                loading:true
+            }
+        case SAVE_USER_IS_ADMIN_SUCCESS:
+            return {
+                ...state,
+                loading:false,
+                userSaveSuccess:true
             }
         default:
             return state;

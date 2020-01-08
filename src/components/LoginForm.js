@@ -35,6 +35,10 @@ const styles = theme => ({
   },
   menu: {
     width: 200
+  },
+  header:{
+      background:theme.palette.primary.main,
+      height:50
   }
 });
 
@@ -74,21 +78,24 @@ class LoginForm extends Component {
   render() {
     const classes = this.props.classes;
     const { from } = this.props.location.state || { from: { pathname: "/" } };
+    
     if (this.state.redirectToReferrer === true) {
       return <Redirect to={from} />;
     }
     return (
       <div>
+          <Grid container className={classes.header}>
+
+          </Grid>
         <div className={classes.content}>
           {/* <AppBar title="Login"></AppBar> */}
           <Grid container>
             <Grid item xs={12}>
-              <Typography className={classes.instructions}>
-                Please enter your username and password.
+              <Typography variant="h6" className={classes.instructions}>
+                Please enter your username and password, and click the "Login" button below.
               </Typography>
-              <Typography className={classes.instructions}>
-                If you do not have an account, click the 'register' button
-                below.
+              <Typography variant="h6" className={classes.instructions}>
+                If you do not have an account, click the 'register' button.
               </Typography>
             </Grid>
           </Grid>

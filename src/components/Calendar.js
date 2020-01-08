@@ -10,19 +10,19 @@ import startOfWeek from "date-fns/startOfWeek";
 import startOfMonth from "date-fns/startOfMonth";
 import endOfWeek from "date-fns/endOfWeek";
 import getDay from "date-fns/getDay";
-import { isSameDay, parseISO, isAfter, getMonth, isBefore} from "date-fns";
+import { isSameDay, parseISO, isAfter, getMonth, isBefore } from "date-fns";
 import classNames from "classnames";
 import Select from "@material-ui/core/Select";
 import InputLabel from "@material-ui/core/InputLabel";
 import MenuItem from "@material-ui/core/MenuItem";
 import FormControl from "@material-ui/core/FormControl";
 import Button from "@material-ui/core/Button";
-import { Redirect, withRouter} from "react-router-dom";
+import { Redirect, withRouter } from "react-router-dom";
 import propTypes from "prop-types";
 import { endOfMonth } from "date-fns/esm";
 import dataMethods from "../utils/data";
 import { connect } from "react-redux";
-import { saveUserShifts } from "../actions/getUserData";
+import { saveUserShifts, getUserData } from "../actions/getUserData";
 const styles = theme => ({
   content: {
     boxSizing: "border-box"
@@ -185,7 +185,8 @@ const styles = theme => ({
     position: "absolute",
     bottom: 20,
     right: 20,
-    zIndex: 10
+    zIndex: 10,
+    color:'#900'
   },
   radio: {
     fontSize: ".9rem",
@@ -229,19 +230,17 @@ class Calendar extends Component {
       userDataRetrieved: false
     };
   }
- 
+
   logout = () => {
     dataMethods.userLogout();
     this.setState({ loggedOut: true });
   };
 
- 
-    routeChange = ()=> {
-        let path = `/Admin`;
-        // console.log(this.props)
-        this.props.history.push(path);
-      }
-
+  routeChange = () => {
+    let path = `/Admin`;
+    // console.log(this.props)
+    this.props.history.push(path);
+  };
 
   getScheduledShiftsForAllUsers = () => {
     dataMethods
@@ -288,9 +287,7 @@ class Calendar extends Component {
             <Grid item xs={2}>
               <Button
                 onClick={this.routeChange}
-                className={
-                  this.state.adminMode ? this.props.classes.adminMode : ""
-                }
+                className={this.props.classes.adminMode}
               >
                 Administration
               </Button>
@@ -350,12 +347,12 @@ class Calendar extends Component {
   };
 
   getShiftValue = day => {
-    let shifts = [...this.state.selectedShifts];
+    let shifts = [...this.props.shifts];
 
     const shiftIndex = shifts.findIndex(shift =>
       isSameDay(parseISO(shift.scheduled_date), day)
     );
-
+    // console.log(shiftIndex)
     if (shiftIndex > -1) {
       return shifts[shiftIndex].scheduled_shift;
     } else {
@@ -511,7 +508,8 @@ class Calendar extends Component {
         }
 
         let isClosedDay = getDay(day) === 0 || getDay(day) === 1;
-        let isDayInCurrentMonth = getMonth(day) === getMonth(this.state.currentMonth);
+        let isDayInCurrentMonth =
+          getMonth(day) === getMonth(this.state.currentMonth);
         days.push(
           <div
             className={classNames(
@@ -519,7 +517,9 @@ class Calendar extends Component {
               classes.cell,
               isSameDay(day, selectedDate) && !isClosedDay
                 ? classes.selected
-                : (isBefore(day,dateToday) && !isSameDay(day,dateToday))||isClosedDay || !isDayInCurrentMonth
+                : (isBefore(day, dateToday) && !isSameDay(day, dateToday)) ||
+                  isClosedDay ||
+                  !isDayInCurrentMonth
                 ? classes.disabled
                 : ""
             )}
@@ -791,18 +791,34 @@ class Calendar extends Component {
       selectedDate: day
     });
   };
-
+  loadUserData = () => {
+    // console.log(this.state.currentMonth)
+    // console.log(this.state.currentMonth, this.state.dayFormat)
+    this.props.getUserData(
+      format(this.state.currentMonth, "yyyy-MM-d"),
+      this.props.user.UID
+    );
+  };
   nextMonth = () => {
-    this.setState({
-      currentMonth: addMonths(this.state.currentMonth, 1),
-      isLoading: true
-    });
+    let nextMonth = addMonths(this.state.currentMonth, 1);
+
+    this.setState(
+      {
+        currentMonth: nextMonth,
+        isLoading: true
+      },
+      this.loadUserData
+    );
   };
   prevMonth = () => {
-    this.setState({
-      currentMonth: addMonths(this.state.currentMonth, -1),
-      isLoading: true
-    });
+    let prevMonth = addMonths(this.state.currentMonth, -1);
+    this.setState(
+      {
+        currentMonth: prevMonth,
+        isLoading: true
+      },
+      this.loadUserData
+    );
   };
 
   render() {
@@ -825,7 +841,8 @@ class Calendar extends Component {
 }
 Calendar.propTypes = {
   classes: propTypes.object.isRequired,
-  saveUserShifts: propTypes.func.isRequired
+  saveUserShifts: propTypes.func.isRequired,
+  getUserData: propTypes.func.isRequired
 };
 
 const mapStateToProps = state => {
@@ -835,6 +852,6 @@ const mapStateToProps = state => {
   };
 };
 
-export default connect(mapStateToProps, { saveUserShifts })(
+export default connect(mapStateToProps, { saveUserShifts, getUserData })(
   withRouter(withStyles(styles)(Calendar))
 );
