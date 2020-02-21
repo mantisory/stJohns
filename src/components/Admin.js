@@ -1,9 +1,8 @@
 import React, { Component } from "react";
 import { Redirect, withRouter } from "react-router-dom";
 import { connect } from "react-redux";
-import DataMethods from "../utils/data";
 import propTypes from "prop-types";
-import { makeStyles } from "@material-ui/core/styles";
+// import { makeStyles } from "@material-ui/core/styles";
 import { getAllUsers, saveUserIsAdmin } from "../actions/getUserData";
 import {
   Grid,
@@ -17,11 +16,11 @@ import {
   InputAdornment
 } from "@material-ui/core";
 import { withStyles } from "@material-ui/core/styles";
+import { ChevronLeft, ChevronRight } from "@material-ui/icons";
 import DateFnsUtils from "@date-io/date-fns";
-import { format } from "date-fns";
+import { format, addDays, subDays } from "date-fns";
 import {
   MuiPickersUtilsProvider,
-  KeyboardTimePicker,
   KeyboardDatePicker
 } from "@material-ui/pickers";
 import { getAllShiftsForDate } from "../actions/getUserData";
@@ -37,19 +36,19 @@ import {
   DialogActions
 } from "@material-ui/core";
 
-import { blue } from "@material-ui/core/colors";
-const useStyles = makeStyles({
-  dialog: {
-    height: 200,
-    width: 200,
-    backgroundColor: blue[100],
-    color: blue[600]
-  },
-  dialogTitle: {
-    background: "#c89f70",
-    width: 300
-  }
-});
+// import { blue } from "@material-ui/core/colors";
+// const useStyles = makeStyles({
+//   dialog: {
+//     height: 200,
+//     width: 200,
+//     backgroundColor: blue[100],
+//     color: blue[600]
+//   },
+//   dialogTitle: {
+//     background: "#c89f70",
+//     width: 300
+//   }
+// });
 const styles = theme => ({
   header: {
     background: theme.palette.primary.main,
@@ -120,7 +119,6 @@ const styles = theme => ({
   },
   pagination:{
     display: 'inline-block',
-    position:'fixed',
     bottom:100,
     left:'40%',
     '& a':{
@@ -140,11 +138,17 @@ const styles = theme => ({
     background: theme.palette.secondary.main,
     borderRadius:5,
     color:'#fff !important'
+  },
+  shiftsForDay:{
+      display:'none'
+  },
+  noShiftsForDay:{
+      display:'block'
   }
 
 });
 function DialogBox(props) {
-  const classes = useStyles();
+//   const classes = useStyles();
   const { onClose, open } = props;
   const handleClose = () => {
     onClose();
@@ -203,18 +207,20 @@ class Admin extends Component {
   };
 
   previousUserPage = () => {
-    if (this.state.currentUserPageNumber > 0) {
+      let currPageNumber = this.state.currentUserPageNumber;
+    if (currPageNumber > 0) {
       this.setState(
-        { currentUserPageNumber: --this.state.currentUserPageNumber },
+        { currentUserPageNumber: --currPageNumber },
         () => this.paginateUsers()
       );
     }
   };
 
   nextUserPage = () => {
-    if (this.state.currentUserPageNumber + 1 < this.state.numberOfPages) {
+      let currPageNumber = this.state.currentUserPageNumber;
+    if (currPageNumber + 1 < this.state.numberOfPages) {
       this.setState(
-        { currentUserPageNumber: ++this.state.currentUserPageNumber },
+        { currentUserPageNumber: ++currPageNumber },
         () => this.paginateUsers()
       );
     }
@@ -270,6 +276,8 @@ class Admin extends Component {
       case "5":
         shiftName = "8am - 4pm";
         break;
+      default:
+      break;
     }
     return shiftName;
   };
@@ -337,9 +345,20 @@ class Admin extends Component {
     }
   };
 
+  previousDay = () => {
+// console.log(this.state.calendarSelectedDate)
+    const newDate = subDays( this.state.calendarSelectedDate,1);
+    this.handleDateChange(newDate)
+    
+  }
+
+  nextDay = () => {
+    const newDate = addDays( this.state.calendarSelectedDate,1);
+    this.handleDateChange(newDate)
+}
   handleDateChange = date => {
-    const dateFns = new DateFnsUtils();
-    this.setState({ calendarSelectedDate: format(date, "yyyy-MM-d") });
+    console.log(date)
+    this.setState({ calendarSelectedDate: date });
     this.props.getAllShiftsForDate(format(date, "yyyy-MM-d")).then(res => {
       let sortedShifts = [];
       res.userData.forEach(shift => {
@@ -440,7 +459,7 @@ class Admin extends Component {
   }
   render() {
     const classes = this.props.classes;
-    const selectedDate = new Date();
+    // const selectedDate = new Date();
     if (this.props.userState.loading) {
       return <div>Loading</div>;
     } else {
@@ -451,18 +470,16 @@ class Admin extends Component {
             <Grid>
                 <Grid container>
                     <Grid item xs={12}>
-                        <Typography variant="h5">Select a day below to see the list of scheduled volunteers for each shift.</Typography>
+                        <Typography variant="h5">Select a day below, using the calendar or arrows, to see the list of scheduled volunteers for each shift.</Typography>
                     </Grid>
                 </Grid>
               <Grid container className={classes.heading}>
-                {/* <Grid item xs={2}>
-                  <span>Select a date to see scheduling</span>
-                </Grid> */}
+               <Grid item xs={1}><ChevronLeft onClick={this.previousDay} /></Grid>
                 <Grid item xs={2}>
                   <MuiPickersUtilsProvider utils={DateFnsUtils}>
                     <KeyboardDatePicker
-                      // variant="inline"
-                      format="yyyy-MM-dd"
+                      // variant=
+                      format="eee, MMM dd, yyyy"
                       margin="normal"
                       id="date-picker-dialog"
                       label="Select a date"
@@ -474,6 +491,11 @@ class Admin extends Component {
                     />
                   </MuiPickersUtilsProvider>
                 </Grid>
+                <Grid item xs={1}><ChevronRight onClick={this.nextDay}/></Grid>
+              </Grid>
+              <Grid container spacing={3} className={this.state.shiftsForDay.length>0?classes.shiftsForDay:classes.noShiftsForDay}>
+                  <Grid item xs={12}> <Typography
+                                variant="h5">There are no shifts scheduled for the selected date.</Typography></Grid>
               </Grid>
               <Grid container spacing={3} className={classes.shiftCards}>
                 {this.state.shiftsForDay.map(shiftGroup => {
@@ -488,7 +510,6 @@ class Admin extends Component {
                           {shiftGroup.users.map(user => {
                             return (
                               <Typography
-                                variant="body2"
                                 color="primary"
                                 key={user.UID}
                               >
@@ -501,6 +522,7 @@ class Admin extends Component {
                                     "&body=Greetings " +
                                     user.firstName
                                   }
+                                  target="_blank"
                                   className={classes.emailLink}
                                 >
                                   {" "}
@@ -616,18 +638,18 @@ class Admin extends Component {
                 })}
                 <Grid container>
                  <div className={classes.pagination}>                    
-                     <a onClick={this.previousUserPage}>{'<'}</a>
+                     <a onClick={this.previousUserPage}><ChevronLeft/></a>
                 
                   {this.state.pages.map(page => {
                     return (
-                        <a onClick={() => this.setPage(page)} className={this.state.currentUserPageNumber==page?classes.activePagination:''}>
+                        <a onClick={() => this.setPage(page)} key={page} className={this.state.currentUserPageNumber==page?classes.activePagination:''}>
                           {page + 1}
                         </a>
                     );
                   })}
 
                  
-                    <a onClick={this.nextUserPage}>{'>'}</a>
+                    <a onClick={this.nextUserPage}><ChevronRight/></a>
                   </div>
                 </Grid>
                 

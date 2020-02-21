@@ -1,5 +1,4 @@
 import React,{useEffect} from 'react';
-import logo from './logo.svg';
 import Cookies from "js-cookie";
 import propTypes from 'prop-types'
 import './App.css';
@@ -7,17 +6,18 @@ import Dashboard from './components/Dashboard.jsx';
 import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
 import {
     BrowserRouter as Router,
-  Switch,
   Route, 
   Redirect,
   } from "react-router-dom";
   import LoginForm from './components/LoginForm'
   import Register from './components/Register'
   import Validate from './components/Validate'
+  import PasswordReset from './components/PasswordReset';
   import Admin from './components/Admin';
   import dataMethods from './utils/data'
   import {connect} from 'react-redux';
   import {renewSession} from './actions/login'
+import passwordReset from './components/PasswordReset';
 
 const theme = createMuiTheme({
     typography:{
@@ -56,7 +56,14 @@ const theme = createMuiTheme({
         disabled: 'rgba(0, 0, 0, 0.38)',
         hint: 'rgba(0, 0, 0, 0.38)'
       },
-    }
+    },
+    overrides: {
+        MuiInput: {
+            root: {
+                width:'100%',
+            },
+        }
+    } 
 });
 
 const PrivateRoute = ({ component: Component, ...rest }) => (
@@ -79,14 +86,16 @@ function App(props) {
    useEffect(() => {
     const userCookie = Cookies.get('stJohnsCookie');
     if(userCookie){
-        dataMethods.setIsAuthenticated(true);
-        props.renewSession(JSON.parse(userCookie))
+         props.renewSession(JSON.parse(userCookie))
     }
-   }, [])
+   }, [props.auth])
 
   return (
     <MuiThemeProvider theme={theme}>
        <div className="App"> 
+       {!props.state.auth.isAuthenticated &&
+        <Redirect to='/LoginForm' />
+       }
             <Router>
                 <PrivateRoute exact path="/" component={Dashboard}/>
                 {props.state.auth.user && 
@@ -96,6 +105,7 @@ function App(props) {
                 <Route path="/LoginForm" component={LoginForm} />
                 <Route path="/Register" component={Register} />
                 <Route path="/Validate" component={Validate} />
+                <Route path="/PasswordReset" component={PasswordReset} />
             </Router>
         </div>
 

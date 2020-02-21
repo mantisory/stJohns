@@ -1,10 +1,9 @@
 import React, { Component } from "react";
-import AppBar from "@material-ui/core/AppBar";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
-import { withStyles, useTheme } from "@material-ui/core/styles";
+import { withStyles } from "@material-ui/core/styles";
 import dataMethods from "../utils/data";
 import propTypes from "prop-types";
 import classnames from "classnames";
@@ -103,7 +102,7 @@ class Register extends Component {
         this.setState({ [value + "Exists"]: false });
       }
     });
-    if(value=='email'){
+    if(value==='email'){
         if(this.validateEmail(event.target.value)){
             this.setState({emailValid:true})
         }else{
@@ -132,7 +131,7 @@ class Register extends Component {
   };
     validateEmail = (mail) => {
        
-        return (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(mail))
+        return (/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(mail))
     }
   render() {
     //   const classes = useTheme();
@@ -151,7 +150,7 @@ class Register extends Component {
               button. All fields are required.
             </Typography>
           </Grid>
-
+<form>
           <Grid item xs={12}>
             <Grid container className={classes.formContainer} alignItems="flex-start" justify="flex-end" direction="row">
               <Grid item xs={3}>
@@ -248,12 +247,11 @@ class Register extends Component {
                   onChange={event => this.setValue(event, "password")}
                   required
                   fullWidth
-                  type="password"
                 />
               </Grid>
             </Grid>
           </Grid>
-
+</form>
           <Grid item xs={12}>
             <Button
               onClick={event => this.handleClick(event)}

@@ -1,5 +1,5 @@
 import dataMethods from "../utils/data";
-import {GET_USER_DATA_BEGIN, GET_USER_DATA_SUCCESS, GET_ALL_USERS, GET_ALL_USERS_SUCCESS, GET_ALL_SHIFTS_FOR_DATE, GET_ALL_SHIFTS_FOR_DATE_SUCCESS, SAVE_USER_IS_ADMIN, SAVE_USER_IS_ADMIN_SUCCESS} from './types'
+import {GET_USER_DATA_BEGIN, GET_USER_DATA_SUCCESS, GET_ALL_USERS_SUCCESS, GET_ALL_SHIFTS_FOR_DATE_SUCCESS, SAVE_USER_IS_ADMIN_SUCCESS} from './types'
 import { format} from 'date-fns'
 
 function fetchUserData(currentDate, UID) {
@@ -7,6 +7,9 @@ function fetchUserData(currentDate, UID) {
 }
 function saveUserData(shifts, UID){
     return dataMethods.saveShifts(shifts, UID);
+}
+function deleteUserShift(day, UID){
+    return dataMethods.deleteShift(day,UID);
 }
 function fetchAllUsers(){
     return dataMethods.getAllUsers();
@@ -58,7 +61,14 @@ export function getAllShiftsForDate(currentDate){
         })
     }
 }
-
+export function removeUserShift(day, UID){
+    return dispatch => {
+        return deleteUserShift(day,UID)
+            .then(results=>{
+                dispatch(getUserData(format(new Date(),'yyyy-MM-d'),UID))
+            })
+    }
+}
 export function saveUserShifts(shifts, UID){
     return dispatch =>{
         return saveUserData(shifts, UID)

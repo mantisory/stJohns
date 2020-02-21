@@ -1,4 +1,4 @@
-import {SET_CURRENT_USER} from '../actions/types';
+import {SET_CURRENT_USER, SET_CURRENT_USER_FAIL} from '../actions/types';
 // import { isEmptyStatement } from "@babel/types";
 
 const initialState={
@@ -13,6 +13,13 @@ export default(state=initialState,action={})=>{
                 isAuthenticated:true,
                 user:action.user,
                 loading:false
+            }
+        case SET_CURRENT_USER_FAIL:
+            return {
+                isAuthenticated:false,
+                user:null,
+                loading:false,
+                error:action.error
             }
         default:
             return state;
