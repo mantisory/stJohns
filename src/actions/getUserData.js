@@ -49,6 +49,7 @@ export function deleteUsers(userList){
 }
 
 export function getUserData(currentDate, UID) {
+    console.log('in get user data')
   return dispatch => {
       return fetchUserData(currentDate, UID)
         .then(results=>{
@@ -148,6 +149,7 @@ export function getAllShiftsForDateSuccess ( data ) {
     }
 }
 export function getUserDataSuccess(data) {
+    console.log('in get user data success')
   return {
     type: GET_USER_DATA_SUCCESS,
     loading:false,

@@ -19,6 +19,7 @@ const dataMethods = (function() {
     },
 
     getScheduledShifts: (currentDate, UID) => {
+        console.log('in get scheduled shifts')
       return axios.get(
         // nodeServer +nodePort +
           "/api/getScheduledShiftsForUser?selectedDate=" +

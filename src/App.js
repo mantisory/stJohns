@@ -75,14 +75,12 @@ const PrivateRoute = ({ component: Component, ...rest }) => (
 )
 const AdminRoute = ({ component: Component,User, ...rest }) => (
     <Route {...rest} render={(props) => (
-        // dataMethods.isAuthenticated() && this.props.state.auth.user.isAdmin === true
         dataMethods.isAuthenticated() && User.isAdmin
             ? <Component {...props} />
         : <Redirect to='/LoginForm' />
 )} />
 )
 function App(props) {
-
    useEffect(() => {
     const userCookie = Cookies.get('stJohnsCookie');
     console.log(dataMethods.isAuthenticated())

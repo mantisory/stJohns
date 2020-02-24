@@ -23,6 +23,7 @@ import { endOfMonth } from "date-fns/esm";
 import dataMethods from "../utils/data";
 import { connect } from "react-redux";
 import { saveUserShifts, removeUserShift, getUserData } from "../actions/getUserData";
+
 const styles = theme => ({
     content: {
         boxSizing: "border-box"
@@ -325,6 +326,7 @@ class Calendar extends Component {
             </Grid>
         );
     }
+
     renderFooter() {
         const classes = this.props.classes;
 
@@ -431,11 +433,13 @@ class Calendar extends Component {
 
         this.setState({ daySelected: 0, calendarClean: isClean });
     };
+
     cancelShift = day => {
         console.log(day)
         this.props.removeUserShift(format(day,'yyyy-MM-d'), this.props.user.UID);
         this.setState({calendarClean:true})
     }
+
     saveUserShifts = () => {
         this.state.selectedShifts.forEach(shift => {
             const scheduledShiftIndex = this.props.shifts.findIndex(
@@ -820,6 +824,7 @@ class Calendar extends Component {
             selectedDate: day
         });
     };
+
     loadUserData = () => {
         // console.log(this.state.currentMonth)
         // console.log(this.state.currentMonth, this.state.dayFormat)
@@ -828,6 +833,7 @@ class Calendar extends Component {
             this.props.user.UID
         );
     };
+
     nextMonth = () => {
         let nextMonth = addMonths(this.state.currentMonth, 1);
 
@@ -839,6 +845,7 @@ class Calendar extends Component {
             this.loadUserData
         );
     };
+    
     prevMonth = () => {
         let prevMonth = addMonths(this.state.currentMonth, -1);
         this.setState(

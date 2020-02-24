@@ -80,6 +80,7 @@ export function login(payload) {
             isAdmin: results.data.isAdmin
           })
         );
+        dispatch(getUserData(format(new Date(),'yyyy-MM-d'),results.data.UID))
         code = 200;
         break;
       case 204:

@@ -71,7 +71,7 @@ class LoginForm extends Component {
     };
 
     this.props.login(payload).then(result => {
-        console.log('test')
+        console.log(result)
       switch (result) {
         case 200:
             this.setState({ redirectToReferrer: true });
@@ -138,6 +138,7 @@ class LoginForm extends Component {
             <Grid item xs={2}>
               <TextField
                 label="Password:"
+                type="password"
                 onChange={event => this.setValue(event, "password")}
               />
             </Grid>
