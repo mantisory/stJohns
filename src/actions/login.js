@@ -31,9 +31,9 @@ export function renewSession(cookie) {
   return dispatch => {
     dataMethods.setIsAuthenticated(true);
     return axios
-    //   .get(nodeServer + nodePort + "/getUserForToken?token=" + cookie.token)
       .get("/api/getUserForToken?token=" + cookie.token)
       .then(results => {
+          console.log(results)
         if(results.data.code!==204){
             dispatch(
                 setCurrentUser({
@@ -67,7 +67,8 @@ export function login(payload) {
           "stJohnsCookie",
           JSON.stringify({
             token: results.data.authenticationToken
-          })
+          }),
+          { expires: new Date(results.data.tokenExpiryDate) }
         );
         dispatch(
           setCurrentUser({

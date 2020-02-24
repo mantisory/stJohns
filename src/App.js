@@ -85,17 +85,15 @@ function App(props) {
 
    useEffect(() => {
     const userCookie = Cookies.get('stJohnsCookie');
+    console.log(dataMethods.isAuthenticated())
     if(userCookie){
-         props.renewSession(JSON.parse(userCookie))
+        props.renewSession(JSON.parse(userCookie))
     }
    }, [props.auth])
 
   return (
     <MuiThemeProvider theme={theme}>
        <div className="App"> 
-       {!props.state.auth.isAuthenticated &&
-        <Redirect to='/LoginForm' />
-       }
             <Router>
                 <PrivateRoute exact path="/" component={Dashboard}/>
                 {props.state.auth.user && 

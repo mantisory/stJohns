@@ -34,6 +34,12 @@ const dataMethods = (function() {
               currentDate
           );
     },
+    getScheduledShiftsForMonth:currentDate => {
+        return axios.get(
+              "/api/getScheduledShiftsForMonth?selectedDate=" +
+              currentDate
+          );
+    },
     getScheduledShiftsForAllUsers: currentDate => {
       return axios.get(
         // nodeServer + nodePort +
@@ -96,6 +102,16 @@ const dataMethods = (function() {
       return Promise.all(usersUpdated).then(res=>{
           return res;
       })
+    },
+
+    deleteUsers: userList => {
+        let usersDeleted = userList.map(user=>{
+            return axios.post("/api/deleteUser", user).then(res=>res);
+            // return ""
+        });
+        return Promise.all(usersDeleted).then(res=>{
+            return res;
+        })
     },
 
     emailValidate: payload => {

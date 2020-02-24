@@ -1,4 +1,4 @@
-import {GET_USER_DATA_BEGIN, GET_USER_DATA_SUCCESS, SAVE_USER_SHIFTS, GET_ALL_SHIFTS_FOR_DATE, GET_ALL_SHIFTS_FOR_DATE_SUCCESS} from '../actions/types'
+import {GET_USER_DATA_BEGIN, GET_USER_DATA_SUCCESS, SAVE_USER_SHIFTS, GET_ALL_SHIFTS_FOR_DATE, GET_ALL_SHIFTS_FOR_DATE_SUCCESS,GET_ALL_SHIFTS_FOR_MONTH_SUCCESS,GET_ALL_SHIFTS_FOR_MONTH} from '../actions/types'
 
 const initialState = {
     shifts:[],
@@ -37,6 +37,12 @@ export default(state=initialState,action={})=>{
                 ...state,
                 loading:false,
                 shifts:action.shifts
+            }
+        case GET_ALL_SHIFTS_FOR_MONTH_SUCCESS:
+            return {
+                ...state,
+                loading:false,
+                allShiftsForMonth:action.monthlyShifts
             }
         default:
             return state;

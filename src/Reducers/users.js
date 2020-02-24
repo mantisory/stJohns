@@ -1,4 +1,4 @@
-import {GET_ALL_USERS, GET_ALL_USERS_SUCCESS,SAVE_USER_IS_ADMIN, SAVE_USER_IS_ADMIN_SUCCESS} from '../actions/types'
+import {GET_ALL_USERS, GET_ALL_USERS_SUCCESS,SAVE_USER_IS_ADMIN, SAVE_USER_IS_ADMIN_SUCCESS, DELETE_USERS_SUCCESS} from '../actions/types'
 const initialState = {
     users:[],
     loading:false,
@@ -18,6 +18,11 @@ export default(state=initialState,action={})=>{
                 ...state,
                 loading:false,
                 users: action.users
+            }
+        case DELETE_USERS_SUCCESS:
+            return {
+                ...state,
+                deleteSuccess:true
             }
         case SAVE_USER_IS_ADMIN:
             return {

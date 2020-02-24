@@ -539,16 +539,6 @@ class Calendar extends Component {
                     }
                 );
 
-                // if (this.state.adminMode) {
-                //     volunteered = this.state.shiftCounts.filter(shift => {
-                //         return isSameDay(
-                //             parse(shift.scheduled_date, dayFormat, new Date()),
-                //             day
-                //         );
-                //     });
-                //     if (volunteered.length > 0) console.log(volunteered);
-                // }
-
                 let isClosedDay = getDay(day) === 0 || getDay(day) === 1;
                 let isDayInCurrentMonth =
                     getMonth(day) === getMonth(this.state.currentMonth);

@@ -1,5 +1,5 @@
 import dataMethods from "../utils/data";
-import {GET_USER_DATA_BEGIN, GET_USER_DATA_SUCCESS, GET_ALL_USERS_SUCCESS, GET_ALL_SHIFTS_FOR_DATE_SUCCESS, SAVE_USER_IS_ADMIN_SUCCESS} from './types'
+import {GET_USER_DATA_BEGIN, GET_USER_DATA_SUCCESS, GET_ALL_USERS_SUCCESS, GET_ALL_SHIFTS_FOR_DATE_SUCCESS, SAVE_USER_IS_ADMIN_SUCCESS, GET_ALL_SHIFTS_FOR_MONTH_SUCCESS, DELETE_USERS_SUCCESS} from './types'
 import { format} from 'date-fns'
 
 function fetchUserData(currentDate, UID) {
@@ -19,6 +19,10 @@ function fetchAllShiftsForDate(currentDate){
     return dataMethods.getScheduledShiftsForDate(currentDate)
 }
 
+function fetchAllShiftsForMonth(currentDate){
+    return dataMethods.getScheduledShiftsForMonth(currentDate)
+}
+
 function saveUserAdmin(userList){
     return dataMethods.saveUserAdmin(userList);
 }
@@ -32,6 +36,18 @@ export function saveUserIsAdmin(userList){
         });
     }
 }
+function deleteUsersInList(userList){
+    return dataMethods.deleteUsers(userList)
+}
+export function deleteUsers(userList){
+    return dispatch => {
+        return deleteUsersInList(userList)
+            .then(results=>{
+                dispatch(deleteUsersSuccess(results.data))
+            })
+    }
+}
+
 export function getUserData(currentDate, UID) {
   return dispatch => {
       return fetchUserData(currentDate, UID)
@@ -57,6 +73,16 @@ export function getAllShiftsForDate(currentDate){
         return fetchAllShiftsForDate(currentDate)
         .then(results => {
             dispatch(getAllShiftsForDateSuccess(results.data));
+            return results.data;
+        })
+    }
+}
+export function getAllShiftsForMonth(currentDate){
+    console.log(currentDate)
+    return dispatch => {
+        return fetchAllShiftsForMonth(currentDate)
+        .then(results => {
+            dispatch(getAllShiftsForMonthSuccess(results.data));
             return results.data;
         })
     }
@@ -92,6 +118,13 @@ export function saveUserIsAdminSuccess (data){
         userSaveSuccess:true
     }
 }
+export function deleteUsersSuccess(data){
+    return{
+        type:DELETE_USERS_SUCCESS,
+        loading:false,
+        userDeleteSuccess:true
+    }
+}
 export function getAllUsersSuccess(data){
     return {
         type:GET_ALL_USERS_SUCCESS,
@@ -99,7 +132,13 @@ export function getAllUsersSuccess(data){
         users:[...data]
     }
 }
-
+export function getAllShiftsForMonthSuccess( data){
+    return {
+        type:GET_ALL_SHIFTS_FOR_MONTH_SUCCESS,
+        loading:false,
+        monthlyShifts:[...data.userData]
+    }
+}
 export function getAllShiftsForDateSuccess ( data ) {
     // console.log(data)
     return{
