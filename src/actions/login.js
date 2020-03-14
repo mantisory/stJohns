@@ -33,7 +33,6 @@ export function renewSession(cookie) {
     return axios
       .get("/api/getUserForToken?token=" + cookie.token)
       .then(results => {
-          console.log(results)
         if(results.data.code!==204){
             dispatch(
                 setCurrentUser({
@@ -41,10 +40,11 @@ export function renewSession(cookie) {
                   first_name: results.data.first_name,
                   last_name: results.data.last_name,
                   UID: results.data.UID,
-                  isAdmin: results.data.isAdmin
+                  isAdmin: results.data.isAdmin,
+                  defaultLocation:results.data.defaultLocation
                 })
               );
-              dispatch(getUserData(format(new Date(),'yyyy-MM-d'),results.data.UID))
+              dispatch(getUserData(format(new Date(),'yyyy-MM-dd'),results.data.UID))
         }else{
             dispatch(loginError())
         }
@@ -55,7 +55,6 @@ export function renewSession(cookie) {
 export function login(payload) {
   return async dispatch => {
     const results = await axios.post(
-    //   nodeServer + nodePort + "/userLogin",
      "/api/userLogin",
       payload
     );
@@ -80,7 +79,7 @@ export function login(payload) {
             isAdmin: results.data.isAdmin
           })
         );
-        dispatch(getUserData(format(new Date(),'yyyy-MM-d'),results.data.UID))
+        dispatch(getUserData(format(new Date(),'yyyy-MM-dd'),results.data.UID))
         code = 200;
         break;
       case 204:

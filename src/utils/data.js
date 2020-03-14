@@ -17,9 +17,10 @@ const dataMethods = (function() {
           value
       );
     },
-
+    getLocationShifts:(locationID,dayValue)=>{
+        return axios.get("/api/getShiftsForLocationAndDay?locationID="+locationID+"&dayValue="+dayValue)
+    },
     getScheduledShifts: (currentDate, UID) => {
-        console.log('in get scheduled shifts')
       return axios.get(
         // nodeServer +nodePort +
           "/api/getScheduledShiftsForUser?selectedDate=" +
@@ -28,43 +29,42 @@ const dataMethods = (function() {
           UID
       );
     },
-    getScheduledShiftsForDate:currentDate => {
+    getScheduledShiftsForDate:(currentDate) => {
         return axios.get(
             // nodeServer +nodePort +
               "/api/getScheduledShiftsForDate?selectedDate=" +
               currentDate
           );
     },
-    getScheduledShiftsForMonth:currentDate => {
+    getScheduledShiftsForMonth:(currentDate,location) => {
         return axios.get(
               "/api/getScheduledShiftsForMonth?selectedDate=" +
               currentDate
           );
     },
-    getScheduledShiftsForAllUsers: currentDate => {
+    getScheduledShiftsForAllUsers: (currentDate,location) => {
       return axios.get(
         // nodeServer + nodePort +
           "/api/getScheduledShiftsForAllUsers?selectedDate=" +
-          currentDate
+          currentDate+ "&location="+location
       );
     },
-    deleteShift: async(day, UID)=>{
-        // console.log(day)
-        const payload = {day:day, UID:UID}
+    deleteShift: async(shiftID)=>{
+        const payload = {shiftID:shiftID}
         return axios.post("/api/deleteShift",payload)
     },
-    saveShifts: async (shifts, UID) => {
+    saveShifts: async (shifts, scheduledDate, locationID, UID ) => {
       let shiftsSaved = shifts.map(shift => {
         if (shift.scheduled_shift_ID) {
           return axios
             .put(
-            //   nodeServer +nodePort +
                 "/api/updateShift?shiftID=" +
                 shift.scheduled_shift_ID +
                 "&selectedDate=" +
-                shift.scheduled_date +
+                scheduledDate +
                 "&shiftValue=" +
-                shift.scheduled_shift
+                shift.scheduled_shift +
+                "&location="+locationID
             )
             .then(res => {
               return res;
@@ -76,9 +76,10 @@ const dataMethods = (function() {
                 "/api/addShift?UID=" +
                 UID +
                 "&selectedDate=" +
-                shift.scheduled_date +
+                scheduledDate +
                 "&shiftValue=" +
-                shift.scheduled_shift
+                shift.scheduled_shift +
+                "&location="+locationID
             )
             .then(res => {
               return res;
@@ -91,13 +92,11 @@ const dataMethods = (function() {
     },
 
     userRegister: payload => {
-    //   return axios.post(nodeServer + nodePort + "/userRegister", payload);
       return axios.post("/api/userRegister", payload);
     },
 
     saveUserAdmin: userList => {
       let usersUpdated = userList.map(user=>{
-        //   return axios.post(nodeServer + nodePort + "/updateUserAdmin",user).then(res=>res);
           return axios.post("/api/updateUserAdmin",user).then(res=>res);
       });
       return Promise.all(usersUpdated).then(res=>{
@@ -135,7 +134,6 @@ const dataMethods = (function() {
         return axios.get('/api/getAllUsers')
     },
     test: (props)=>{
-        console.log(props);
         return true;
     },
     userLogout: () => {

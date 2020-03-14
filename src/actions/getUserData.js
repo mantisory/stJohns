@@ -1,15 +1,15 @@
 import dataMethods from "../utils/data";
-import {GET_USER_DATA_BEGIN, GET_USER_DATA_SUCCESS, GET_ALL_USERS_SUCCESS, GET_ALL_SHIFTS_FOR_DATE_SUCCESS, SAVE_USER_IS_ADMIN_SUCCESS, GET_ALL_SHIFTS_FOR_MONTH_SUCCESS, DELETE_USERS_SUCCESS} from './types'
+import {GET_USER_DATA_BEGIN, GET_USER_DATA_SUCCESS, GET_ALL_USERS_SUCCESS, GET_ALL_SHIFTS_FOR_DATE_SUCCESS,SAVE_USER,SAVE_USER_SUCCESS, SAVE_USER_IS_ADMIN_SUCCESS, GET_ALL_SHIFTS_FOR_MONTH_SUCCESS, DELETE_USERS_SUCCESS} from './types'
 import { format} from 'date-fns'
 
 function fetchUserData(currentDate, UID) {
   return dataMethods.getScheduledShifts(currentDate, UID);
 }
-function saveUserData(shifts, UID){
-    return dataMethods.saveShifts(shifts, UID);
+function saveUserData(shifts, scheduledDate, locationID, UID){
+    return dataMethods.saveShifts(shifts, scheduledDate, locationID, UID);
 }
-function deleteUserShift(day, UID){
-    return dataMethods.deleteShift(day,UID);
+function deleteUserShift(shiftID){
+    return dataMethods.deleteShift(shiftID);
 }
 function fetchAllUsers(){
     return dataMethods.getAllUsers();
@@ -23,10 +23,24 @@ function fetchAllShiftsForMonth(currentDate){
     return dataMethods.getScheduledShiftsForMonth(currentDate)
 }
 
+function saveUser(user){
+    user.isStaff = user.isStaff?1:0;
+    user.isAdmin = user.isAdmin?1:0;
+    user.location = parseInt(user.location)
+    return dataMethods.userRegister(user);
+}
+
 function saveUserAdmin(userList){
     return dataMethods.saveUserAdmin(userList);
 }
-
+export function saveNewUser(user){
+    return dispatch=>{
+        return saveUser(user)
+        .then(results=>{
+            dispatch(saveUserSuccess(results.data))
+        })
+    }
+}
 export function saveUserIsAdmin(userList){
     return dispatch => {
         return saveUserAdmin(userList)
@@ -49,7 +63,6 @@ export function deleteUsers(userList){
 }
 
 export function getUserData(currentDate, UID) {
-    console.log('in get user data')
   return dispatch => {
       return fetchUserData(currentDate, UID)
         .then(results=>{
@@ -79,7 +92,6 @@ export function getAllShiftsForDate(currentDate){
     }
 }
 export function getAllShiftsForMonth(currentDate){
-    console.log(currentDate)
     return dispatch => {
         return fetchAllShiftsForMonth(currentDate)
         .then(results => {
@@ -88,21 +100,14 @@ export function getAllShiftsForMonth(currentDate){
         })
     }
 }
-export function removeUserShift(day, UID){
+export function removeUserShift(shiftID, UID){
     return dispatch => {
-        return deleteUserShift(day,UID)
-            .then(results=>{
-                dispatch(getUserData(format(new Date(),'yyyy-MM-d'),UID))
-            })
+        return deleteUserShift(shiftID)
     }
 }
-export function saveUserShifts(shifts, UID){
+export function saveUserShifts(shifts, scheduledDate,locationID, UID){
     return dispatch =>{
-        return saveUserData(shifts, UID)
-            .then(results=>{
-                dispatch(getUserData(format(new Date(),'yyyy-MM-d'),UID))
-
-            })
+        return saveUserData(shifts,scheduledDate, locationID, UID)
     }
 }
 
@@ -111,6 +116,14 @@ export const getUserDataBegin = () => ({
   type: GET_USER_DATA_BEGIN,
   loading:true
 });
+
+export function saveUserSuccess(data){
+    return{
+        type:SAVE_USER_SUCCESS,
+        loading:false,
+        userSaveSuccess:true
+    }
+}
 
 export function saveUserIsAdminSuccess (data){
     return{
@@ -141,7 +154,6 @@ export function getAllShiftsForMonthSuccess( data){
     }
 }
 export function getAllShiftsForDateSuccess ( data ) {
-    // console.log(data)
     return{
     type:GET_ALL_SHIFTS_FOR_DATE_SUCCESS,
     loading:false,
@@ -149,7 +161,6 @@ export function getAllShiftsForDateSuccess ( data ) {
     }
 }
 export function getUserDataSuccess(data) {
-    console.log('in get user data success')
   return {
     type: GET_USER_DATA_SUCCESS,
     loading:false,

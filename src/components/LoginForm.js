@@ -71,7 +71,6 @@ class LoginForm extends Component {
     };
 
     this.props.login(payload).then(result => {
-        console.log(result)
       switch (result) {
         case 200:
             this.setState({ redirectToReferrer: true });
@@ -92,7 +91,6 @@ class LoginForm extends Component {
   }
 
   setValue(event, value) {
-      console.log(value)
     this.setState({ [value]: event.target.value });
   }
   render() {

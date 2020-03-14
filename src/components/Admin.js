@@ -3,7 +3,7 @@ import { Redirect, withRouter } from "react-router-dom";
 import { connect } from "react-redux";
 import propTypes from "prop-types";
 // import { makeStyles } from "@material-ui/core/styles";
-import { getAllUsers, saveUserIsAdmin, deleteUsers} from "../actions/getUserData";
+import { getAllUsers, saveUserIsAdmin,saveNewUser, deleteUsers } from "../actions/getUserData";
 import {
     Grid,
     Checkbox,
@@ -18,7 +18,7 @@ import {
 import { withStyles } from "@material-ui/core/styles";
 import { ChevronLeft, ChevronRight } from "@material-ui/icons";
 import DateFnsUtils from "@date-io/date-fns";
-import { format, addDays, subDays, startOfWeek, isSameDay, parseISO, addWeeks, getMonth } from "date-fns";
+import { format, addDays, subDays, startOfWeek, isSameDay, parseISO, addWeeks, getMonth, isThisMonth } from "date-fns";
 import {
     MuiPickersUtilsProvider,
     KeyboardDatePicker
@@ -37,6 +37,7 @@ import {
     DialogContentText,
     DialogActions
 } from "@material-ui/core";
+import UserModal from './UserModal'
 
 // import { blue } from "@material-ui/core/colors";
 // const useStyles = makeStyles({
@@ -89,8 +90,8 @@ const styles = theme => ({
     },
     shiftCards: {
         display: "flex",
-        alignItems: "center",
-        justifyContent: "center"
+        alignItems: "left",
+        justifyContent: "left"
     },
     shiftCard: {
         maxWidth: 345,
@@ -122,7 +123,7 @@ const styles = theme => ({
     pagination: {
         display: 'inline-block',
         bottom: 0,
-        position:'relative',
+        position: 'relative',
         left: '40%',
         '& a': {
             color: 'black',
@@ -152,11 +153,11 @@ const styles = theme => ({
         borderTop: '1px solid black',
         borderBottom: '1px solid black',
         borderRight: '1px solid black',
-        minHeight: '50vh',
+        minHeight: '25vh',
         // height:'100%',
         maxWidth: '14.28%',
         flexBasis: '14.28%',
-        minWidth: 180,
+        minWidth: 190,
         display: 'inline-block',
         "&:first-child": {
             borderTopLeftRadius: 10,
@@ -195,8 +196,8 @@ const styles = theme => ({
         maxHeight: 30,
         minHeight: 30,
         paddingTop: 5,
-        textDecoration:'none',
-        color:'#000'
+        textDecoration: 'none',
+        color: '#000'
     },
     staffUser: {
         color: theme.palette.secondary.dark,
@@ -207,13 +208,23 @@ const styles = theme => ({
         top: '50%'
     },
     weeklyCalendar: {
-        top: 100,
+        top: 10,
         position: 'relative'
+    },
+    locationWeek: {
+        marginBottom: 20
+    },
+    leftAlign: {
+        textAlign: 'left',
+        marginBottom: 10,
+        fontWeight: 'bold'
+    },
+    dailyShiftContainer:{
+        marginBottom:20,
     }
 });
 function DialogBox(props) {
     const { onClose, open } = props;
-    // console.log(props.type)
     const handleClose = () => {
         onClose();
     };
@@ -254,10 +265,11 @@ class Admin extends Component {
             numberOfPages: 0,
             pages: [],
             userAdminSaved: false,
-            usersDeleted:false,
+            usersDeleted: false,
             goHome: false,
             calendarView: 'daily',
-            currentDay: new Date()
+            currentDay: new Date(),
+            addUserDialogOpen:false,
         };
     }
 
@@ -305,7 +317,14 @@ class Admin extends Component {
             return order === "desc" ? comparison * -1 : comparison;
         };
     };
+    compareCheckboxValues = (key, order) => {
+        let multiplier = order === 'desc' ? 1 : -1
+        return (a, b) => {
 
+            if (!a.hasOwnProperty(key) || !b.hasOwnProperty(key)) return 0;
+            return (a === b) ? 0 : a ? multiplier * -1 : multiplier;
+        }
+    }
     sortBy = key => {
         this.setState(
             state => {
@@ -313,10 +332,14 @@ class Admin extends Component {
                 if (this.state.sortCriteria === key) {
                     sortDirection = this.state.sortDirection === "asc" ? "desc" : "asc";
                 }
-
-                let sortedUsers = [...this.state.users].sort(
-                    this.compareValues(key, sortDirection)
-                );
+                let sortedUsers;
+                if (key == 'isAdmin' || key === 'isStaff') {
+                    sortedUsers = [...this.state.users].sort(this.compareCheckboxValues(key, sortDirection))
+                } else {
+                    sortedUsers = [...this.state.users].sort(
+                        this.compareValues(key, sortDirection)
+                    );
+                }
                 return {
                     users: sortedUsers,
                     sortDirection: sortDirection,
@@ -350,7 +373,7 @@ class Admin extends Component {
         }
         return shiftName;
     };
-     getUsers = ()=>{
+    getUsers = () => {
         this.props.getAllUsers().then(res => {
             this.setState(
                 {
@@ -361,12 +384,12 @@ class Admin extends Component {
             );
             this.handleDateChange(new Date());
         });
-     }
+    }
     componentDidMount() {
         this.getUsers();
 
-        this.props.getAllShiftsForMonth(format(new Date(), "yyyy-MM-d")).then(res => {
-            // // console.log()
+        this.props.getAllShiftsForMonth(format(new Date(), "yyyy-MM-dd")).then(res => {
+            //   console.log(res)
             // this.setState({
             //     shiftsForMonth:[...res.userData]
             // })
@@ -384,7 +407,6 @@ class Admin extends Component {
         let deletedUserIndex = deletedUsers.findIndex(user => {
             return user.UID === UID;
         });
-        console.log(deletedUserIndex)
         if (deletedUserIndex > -1) {
             deletedUsers.splice(deletedUserIndex, 1)
         } else {
@@ -436,7 +458,6 @@ class Admin extends Component {
                     user.last_name.toLowerCase().indexOf(e.target.value) > -1
                 );
             });
-            // console.log(filteredUsers)
             this.setState({ users: filteredUsers }, () => this.paginateUsers());
         } else {
             this.setState({ users: [...this.props.userState.users] }, () =>
@@ -457,7 +478,7 @@ class Admin extends Component {
     }
     handleDateChange = date => {
         this.setState({ calendarSelectedDate: date });
-        this.props.getAllShiftsForDate(format(date, "yyyy-MM-d")).then(res => {
+        this.props.getAllShiftsForDate(format(date, "yyyy-MM-dd")).then(res => {
             let sortedShifts = [];
             res.userData.forEach(shift => {
                 let shiftIndex = sortedShifts.findIndex(sortedShift => {
@@ -466,6 +487,7 @@ class Admin extends Component {
                 if (shiftIndex < 0) {
                     sortedShifts.push({
                         shiftNumber: shift.scheduled_shift,
+                        location:shift.locationID,
                         users: [
                             {
                                 firstName: shift.first_name,
@@ -501,14 +523,27 @@ class Admin extends Component {
         });
     };
     deleteUsers = () => {
-        this.props.deleteUsers(this.state.deletedUsers).then(res=>{
-            if(this.props.userState.deleteSuccess){
-                this.setState({usersDeleted:true,deletedUsers:[]});
+        this.props.deleteUsers(this.state.deletedUsers).then(res => {
+            if (this.props.userState.deleteSuccess) {
+                this.setState({ usersDeleted: true, deletedUsers: [] });
                 this.getUsers();
             }
         })
     }
+    addUsers = () => {
+        this.setState({addUserDialogOpen:true})
+    }
 
+    cancelAddUserList=()=>{
+        this.setState({addUserDialogOpen:false})
+    }
+    
+    saveUser = (user) => {
+        this.props.saveNewUser(user).then(result=>{
+            this.setState({addUserDialogOpen:false})
+        })
+    }
+    
     renderHeader() {
         const classes = this.props.classes;
         if (this.state.goGome) {
@@ -556,15 +591,22 @@ class Admin extends Component {
                         onChange={this.filterUserResults}
                     />
                 </Grid>
-                <Grid item xs={6} />
+                <Grid item xs={4} />
+                <Grid item xs={2}>
+                    <Button variant="outlined" onClick={this.addUsers}>Add Users</Button>
+                    {this.state.addUserDialogOpen &&
+                    <UserModal open={this.state.addUserDialogOpen} dialogSaveUser={this.saveUser} dialogClose={this.cancelAddUserList}/>
+                    }
+                    
+                </Grid>
                 <Grid item xs={2}>
                     <Button variant="outlined"
                         onClick={this.deleteUsers}
-                        disabled={this.state.deletedUsers.length<1?true:false}
+                        disabled={this.state.deletedUsers.length < 1 ? true : false}
                     >
                         Delete Selected
           </Button></Grid>
-          <Grid item xs={2}>
+                <Grid item xs={2}>
                     <Button variant="outlined"
                         onClick={this.saveUserData}
                         disabled={this.state.userDataClean}
@@ -587,7 +629,7 @@ class Admin extends Component {
         );
     }
     handleDialogClose() {
-        this.setState({ userAdminSaved: false, userDataClean: true,usersDeleted:false });
+        this.setState({ userAdminSaved: false, userDataClean: true, usersDeleted: false });
     }
     changeView = (view) => {
         this.setState({ calendarView: view })
@@ -596,7 +638,6 @@ class Admin extends Component {
         console.log(dateClicked)
     }
     getDailyShifts = dailyShifts => {
-console.log(dailyShifts)
         const timeSlots = ["5am - 10am", "10am - 2pm", "2pm - 4pm", "4pm - 7pm", "8am - 4pm"];
         const classes = this.props.classes;
         let shiftTimeSlot = 0;
@@ -611,10 +652,10 @@ console.log(dailyShifts)
                         return (
                             <Grid container key={'timeSlot' + shiftTimeSlot}>
                                 <Grid item xs={12} className={classes.timeSlot}>{timeSlots[shiftTimeSlot]}</Grid>
-                                <Grid item xs={12}  key={shift.scheduled_shift_ID}>
+                                <Grid item xs={12} key={shift.scheduled_shift_ID}>
                                     <a href={
                                         "mailto:" +
-                                        shift.email 
+                                        shift.email
                                         + "?subject=re: volunteering for " +
                                         shift.scheduled_date +
                                         "&body=Greetings " +
@@ -624,8 +665,8 @@ console.log(dailyShifts)
                                         className={classNames(classes.shiftUser, shift.isStaff === 1 ? classes.staffUser : '')}
                                     >
                                         {shift.first_name + " " + shift.last_name}
-                                        
-                                    </a>  
+
+                                    </a>
                                 </Grid>
                             </Grid>
                         )
@@ -633,9 +674,9 @@ console.log(dailyShifts)
                         return (
                             <Grid container key={'timeSlot' + shiftTimeSlot + shift.scheduled_shift_ID}>
                                 <Grid item xs={12} className={classNames(classes.shiftUser, shift.isStaff === 1 ? classes.staffUser : '')} key={shift.scheduled_shift_ID}>
-                                <a href={
+                                    <a href={
                                         "mailto:" +
-                                        shift.email 
+                                        shift.email
                                         + "?subject=re: volunteering for " +
                                         shift.scheduled_date +
                                         "&body=Greetings " +
@@ -645,7 +686,7 @@ console.log(dailyShifts)
                                         className={classNames(classes.shiftUser, shift.isStaff === 1 ? classes.staffUser : '')}
                                     >
                                         {shift.first_name + " " + shift.last_name}
-                                    </a>  
+                                    </a>
                                 </Grid>
                             </Grid>
                         )
@@ -658,19 +699,19 @@ console.log(dailyShifts)
                         <Grid container key={'timeSlot' + shiftTimeSlot + shift.scheduled_shift_ID}>
                             <Grid item xs={12} className={classes.timeSlot} key={'timeSlot' + shiftTimeSlot}>{timeSlots[shiftTimeSlot]}</Grid>
                             <Grid item xs={12} className={classNames(classes.shiftUser, shift.isStaff === 1 ? classes.staffUser : '')} key={shift.scheduled_shift_ID}>
-                            <a href={
-                                        "mailto:" +
-                                        shift.email 
-                                        + "?subject=re: volunteering for " +
-                                        shift.scheduled_date +
-                                        "&body=Greetings " +
-                                        shift.first_name + ", "
-                                    }
-                                        target="_blank"
-                                        className={classNames(classes.shiftUser, shift.isStaff === 1 ? classes.staffUser : '')}
-                                    >
-                                        {shift.first_name + " " + shift.last_name}
-                                    </a>  
+                                <a href={
+                                    "mailto:" +
+                                    shift.email
+                                    + "?subject=re: volunteering for " +
+                                    shift.scheduled_date +
+                                    "&body=Greetings " +
+                                    shift.first_name + ", "
+                                }
+                                    target="_blank"
+                                    className={classNames(classes.shiftUser, shift.isStaff === 1 ? classes.staffUser : '')}
+                                >
+                                    {shift.first_name + " " + shift.last_name}
+                                </a>
                             </Grid>
                         </Grid>
                     )
@@ -682,22 +723,20 @@ console.log(dailyShifts)
         )
     }
     previousWeek = () => {
-        // const theCurrentDay = this.state.currentDay
-
-
-        if (getMonth(addWeeks(this.state.currentDay, -1)) != getMonth(this.state.currentDay)) {
-            this.props.getAllShiftsForMonth(format(addWeeks(this.state.currentDay, -1), 'yyyy-MM-dd'))
+        let mondayThisWeek = startOfWeek(this.state.currentDay, { weekStartsOn: 1 })
+        if (getMonth(addWeeks(mondayThisWeek, -1)) != getMonth(mondayThisWeek)) {
+            this.props.getAllShiftsForMonth(format(addWeeks(mondayThisWeek, -1), 'yyyy-MM-dd'))
         }
-        this.setState({ currentDay: addWeeks(this.state.currentDay, -1) })
+        this.setState({ currentDay: addWeeks(mondayThisWeek, -1) })
     }
     nextWeek = () => {
-
-        if (getMonth(addWeeks(this.state.currentDay, -1)) != getMonth(this.state.currentDay)) {
-            this.props.getAllShiftsForMonth(format(addWeeks(this.state.currentDay, 1), 'yyyy-MM-dd'))
+        let mondayThisWeek = startOfWeek(this.state.currentDay, { weekStartsOn: 1 })
+        if (getMonth(addWeeks(mondayThisWeek, 1)) != getMonth(mondayThisWeek)) {
+            this.props.getAllShiftsForMonth(format(addWeeks(mondayThisWeek, 1), 'yyyy-MM-dd'))
         }
-        this.setState({ currentDay: addWeeks(this.state.currentDay, 1) })
+        this.setState({ currentDay: addWeeks(mondayThisWeek, 1) })
     }
-    renderWeekly() {
+    renderWeekly(locationID) {
         const classes = this.props.classes;
         const weekStart = startOfWeek(this.state.currentDay, { weekStartsOn: 1 })
         const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
@@ -706,10 +745,10 @@ console.log(dailyShifts)
             return a.scheduled_shift > b.scheduled_shift ? 1 : b.scheduled_shift > a.scheduled_shift ? -1 : 0
         })
 
-        for (let i = 0; i < 7; i++) {
+        for (let i = 1; i < 6; i++) {
             let theDate = addDays(weekStart, i);
             let dailyShifts = sortedShiftData.filter(shift => {
-                return isSameDay(parseISO(shift.scheduled_date), theDate)
+                return isSameDay(new Date(shift.scheduled_date), theDate) && shift.locationID === locationID
             })
 
             days.push(
@@ -726,10 +765,69 @@ console.log(dailyShifts)
         }
 
         return (
-            <Grid container >{days}</Grid>
+            <Grid container className={classes.locationWeek}>
+                {days}
+            </Grid>
 
         )
     }
+
+    renderDaily(locationID) {
+        const classes = this.props.classes;
+        const locationDailyShifts = [...this.state.shiftsForDay].filter(shift=> {return shift.location===locationID})
+        console.log(locationDailyShifts)
+        return (
+            <Grid container className={classes.dailyShiftContainer} justify="flex-start">
+                <Grid container spacing={3} className={locationDailyShifts.length > 0 ? classes.shiftsForDay : classes.noShiftsForDay}>
+                    <Grid item xs={12}> 
+                    <Typography variant="h5">There are no shifts scheduled for the selected date.</Typography></Grid>
+                </Grid>
+                <Grid container spacing={3} className={classes.shiftCards} justify="flex-start" direction="row" alignItems="flex-start">
+                    <Grid item xs={1}></Grid>
+                    {locationDailyShifts.map(shiftGroup => {
+                        return (
+                            
+                            <Grid item xs={2} key={shiftGroup.shiftNumber}>
+                                <Card className={classes.shiftCard}>
+                                    <CardHeader
+                                        title={this.getShiftLabel(shiftGroup.shiftNumber)}
+                                        className={classes.cardHeader}
+                                    />
+                                    <CardContent>
+                                        {shiftGroup.users.map(user => {
+                                            return (
+                                                <Typography
+                                                    color="primary"
+                                                    key={user.UID+locationID}
+                                                >
+                                                    <a
+                                                        href={
+                                                            "mailto:" +
+                                                            user.email +
+                                                            "?subject=re: volunteering  for " +
+                                                            this.state.calendarSelectedDate +
+                                                            "&body=Greetings " +
+                                                            user.firstName + ", " + user.isStaff
+                                                        }
+                                                        target="_blank"
+
+                                                        className={classNames(classes.emailLink, user.isStaff === 1 ? classes.staffUser : '')}
+                                                    >
+                                                        {user.firstName + " " + user.lastName}
+                                                    </a>
+                                                </Typography>
+                                            );
+                                        })}
+                                    </CardContent>
+                                </Card>
+                            </Grid>
+                        );
+                    })}
+                </Grid>
+            </Grid>
+        )
+    }
+
     render() {
         const classes = this.props.classes;
         if (this.props.userState.loading) {
@@ -771,66 +869,57 @@ console.log(dailyShifts)
                                 </Grid>
                                 <Grid item xs={1}><ChevronRight onClick={this.nextDay} /></Grid>
                             </Grid>
-                            <Grid container spacing={3} className={this.state.shiftsForDay.length > 0 ? classes.shiftsForDay : classes.noShiftsForDay}>
-                                <Grid item xs={12}> <Typography
-                                    variant="h5">There are no shifts scheduled for the selected date.</Typography></Grid>
+                            <Grid container>
+                                <Grid item xs={1}></Grid>
+                                <Grid item xs={2} className={classes.leftAlign}>St. John's Mission</Grid>
+                                <Grid item xs={9}></Grid>
                             </Grid>
-                            <Grid container spacing={3} className={classes.shiftCards}>
-                                {this.state.shiftsForDay.map(shiftGroup => {
-                                    return (
-                                        <Grid item xs={2} key={shiftGroup.shiftNumber}>
-                                            <Card className={classes.shiftCard}>
-                                                <CardHeader
-                                                    title={this.getShiftLabel(shiftGroup.shiftNumber)}
-                                                    className={classes.cardHeader}
-                                                />
-                                                <CardContent>
-                                                    {shiftGroup.users.map(user => {
-                                                        return (
-                                                            <Typography
-                                                                color="primary"
-                                                                key={user.UID}
-                                                            >
-                                                                <a
-                                                                    href={
-                                                                        "mailto:" +
-                                                                        user.email +
-                                                                        "?subject=re: volunteering  for " +
-                                                                        this.state.calendarSelectedDate + 
-                                                                        "&body=Greetings " +
-                                                                        user.firstName + ", " + user.isStaff
-                                                                    }
-                                                                    target="_blank"
-                                                                    
-                                                                    className={classNames(classes.emailLink, user.isStaff === 1 ? classes.staffUser : '')}
-                                                                >
-                                                                    {user.firstName + " " + user.lastName}
-                                                                </a>
-                                                            </Typography>
-                                                        );
-                                                    })}
-                                                </CardContent>
-                                            </Card>
-                                        </Grid>
-                                    );
-                                })}
+                            {this.renderDaily(1)}
+                            <Grid container>
+                                <Grid item xs={1}></Grid>
+                                <Grid item xs={2} className={classes.leftAlign}>Good Neighbors Scarborough</Grid>
+                                <Grid item xs={9}></Grid>
                             </Grid>
+                            {this.renderDaily(2)}
                         </Grid>
                     )}
                     {this.state.calendarVisible && this.state.calendarView == 'weekly' && (
                         <Grid container className={classes.weeklyCalendar}>
-                            <Grid item xs={1}>
-                                <Button onClick={() => this.previousWeek()} className={classes.calendarButton}>
-                                    <ChevronLeft style={{ fontSize: 48 }} />Previous Week
-                                </Button>
+                            <Grid container>
+                                <Grid item xs={1}></Grid>
+                                <Grid item xs={2} className={classes.leftAlign}>St. John's Mission</Grid>
+                                <Grid item xs={9}></Grid>
                             </Grid>
-                            <Grid item xs={10}>
-                                {this.renderWeekly()}
-                            </Grid>
-                            <Grid item xs={1}>
-                                <Button onClick={() => this.nextWeek()} className={classes.calendarButton}>
-                                    Next Week<ChevronRight style={{ fontSize: 48 }} />
+                            <Grid container>
+                                <Grid item xs={2}>
+                                    <Button onClick={() => this.previousWeek()} className={classes.calendarButton}>
+                                        <ChevronLeft style={{ fontSize: 48 }} />Previous Week
                                 </Button>
+                                </Grid>
+                                <Grid item xs={8} style={{textAlign:'center'}}>
+                                    {this.renderWeekly(1)}
+                                </Grid>
+                                <Grid item xs={2}>
+                                    <Button onClick={() => this.nextWeek()} className={classes.calendarButton}>
+                                        Next Week<ChevronRight style={{ fontSize: 48 }} />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                            <Grid container>
+                                <Grid item xs={1}></Grid>
+                                <Grid item xs={2} className={classes.leftAlign}>Good Neightbors Scarborough</Grid>
+                                <Grid item xs={9}></Grid>
+                            </Grid>
+                            <Grid container>
+                                <Grid item xs={2}>
+
+                                </Grid>
+                                <Grid item xs={8}>
+                                    {this.renderWeekly(2)}
+                                </Grid>
+                                <Grid item xs={2}>
+
+                                </Grid>
                             </Grid>
                         </Grid>
                     )}
@@ -887,10 +976,14 @@ console.log(dailyShifts)
                                                 <ArrowDownwardIcon className={classes.arrow} />
                                             )}
                                     </Grid>
-                                    <Grid item xs={1}>
+                                    <Grid item xs={1}
+                                    // onClick={() => this.sortBy("isAdmin")}
+                                    >
                                         Administrator
                   </Grid>
-                                    <Grid item xs={1}>Staff</Grid>
+                                    <Grid item xs={1}
+                                    // onClick={()=>this.sortBy('isStaff')}
+                                    >Staff</Grid>
                                     <Grid item xs={1}>Delete</Grid>
 
                                 </Grid>
@@ -970,6 +1063,7 @@ Admin.propTypes = {
     getAllShiftsForDate: propTypes.func.isRequired,
     getAllShiftsForMonth: propTypes.func.isRequired,
     saveUserIsAdmin: propTypes.func.isRequired,
+    saveNewUser:propTypes.func.isRequired,
     deleteUsers: propTypes.func.isRequired,
     classes: propTypes.object.isRequired
 };
@@ -983,6 +1077,7 @@ export default connect(mapStateToProps, {
     getAllUsers,
     getAllShiftsForDate,
     getAllShiftsForMonth,
+    saveNewUser,
     saveUserIsAdmin,
     deleteUsers
 })(withRouter(withStyles(styles)(Admin)));

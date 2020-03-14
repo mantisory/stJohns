@@ -7,6 +7,11 @@ import { withStyles } from "@material-ui/core/styles";
 import dataMethods from "../utils/data";
 import propTypes from "prop-types";
 import classnames from "classnames";
+import { Select } from "@material-ui/core";
+import FormControl from "@material-ui/core/FormControl";
+import { MenuItem } from "material-ui";
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+
 const styles = theme => ({
   error: {
     fontWeight: 400,
@@ -40,6 +45,12 @@ const styles = theme => ({
   header:{
     background:theme.palette.primary.main,
     height:50
+},
+selectControl: {
+    width: '100%'
+},
+formControl:{
+    width:'100%'
 }
 });
 class Register extends Component {
@@ -51,6 +62,7 @@ class Register extends Component {
       email: "",
       password: "",
       username: "",
+      location:0,
       errorMessage: "",
       successMessage: "",
       usernameExists: false,
@@ -65,7 +77,11 @@ class Register extends Component {
       username: this.state.username,
       first_name: this.state.first_name,
       last_name: this.state.last_name,
-      password: this.state.password
+      password: this.state.password,
+      location: this.state.location,
+      isStaff:0,
+      isAdmin:0,
+      selfRegister:true
     };
 
     dataMethods.userRegister(payload).then(result => {
@@ -134,7 +150,7 @@ class Register extends Component {
         return (/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(mail))
     }
   render() {
-    //   const classes = useTheme();
+    //   const themeClasses = useTheme();
     const classes = this.props.classes;
     return (
         <div>
@@ -151,6 +167,27 @@ class Register extends Component {
             </Typography>
           </Grid>
 <form>
+        <Grid item xs={12}>
+            <Grid container className={classes.formContainer}>
+            <Grid item xs={3}>
+            <FormControl className={classes.formControl}>
+                <MuiThemeProvider>
+                <Select
+                  label="Default Location"
+                  onChange={event => this.setValue(event, "location")}
+                  value={this.state.location}
+                  onClick={e => e.stopPropagation()}
+                  fullWidth
+                  className={classes.selectControl}
+                >
+                    <MenuItem value={1}>St. John's</MenuItem>
+                    <MenuItem value={2}>Good Neighbors</MenuItem>
+                </Select>
+                </MuiThemeProvider>
+                </FormControl>
+              </Grid>
+            </Grid>
+        </Grid>
           <Grid item xs={12}>
             <Grid container className={classes.formContainer} alignItems="flex-start" justify="flex-end" direction="row">
               <Grid item xs={3}>

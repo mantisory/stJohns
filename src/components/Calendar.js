@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import Grid from "@material-ui/core/Grid";
 import { withStyles } from "@material-ui/core/styles";
+import {Typography} from '@material-ui/core';
 import { ChevronLeft, ChevronRight } from "@material-ui/icons";
 import format from "date-fns/format";
 import addMonths from "date-fns/addMonths";
@@ -16,6 +17,7 @@ import Select from "@material-ui/core/Select";
 import InputLabel from "@material-ui/core/InputLabel";
 import MenuItem from "@material-ui/core/MenuItem";
 import FormControl from "@material-ui/core/FormControl";
+import ShiftSelectDialog from './ShiftSelectDialog';
 import Button from "@material-ui/core/Button";
 import { Redirect, withRouter } from "react-router-dom";
 import propTypes from "prop-types";
@@ -34,11 +36,13 @@ const styles = theme => ({
     },
     header: {
         background: theme.palette.primary.main,
-        fontWeight: "bold",
         width: "100%",
         padding: "1em 0 0 0",
-        color: theme.palette.primary.contrastText,
-        fontSize: "1.3em"
+    },
+    headerText:{
+        color:theme.palette.primary.contrastText,
+        fontWeight:'bold',
+        fontSize:'1.3em'
     },
     instructions: {
         paddingTop: 70,
@@ -64,10 +68,14 @@ const styles = theme => ({
         right: 0
     },
     chevLeft: {
-        textAlign: "right"
+        textAlign: "right",
+        fontWeight:'bold',
+        fontSize:'1.3em'
     },
     chevRight: {
-        textAlign: "left"
+        textAlign: "left",
+        fontWeight:'bold',
+        fontSize:'1.3em'
     },
     calendarBody: {
         position: "relative",
@@ -223,8 +231,17 @@ const styles = theme => ({
     },
     adminMode: {
         color: "white",
-        background: "black"
-    }
+        background: theme.palette.secondary.main
+    },
+    paper: {
+        position: 'absolute',
+        width: 400,
+        backgroundColor: theme.palette.background.paper,
+        border: '1px solid #000',
+        padding: theme.spacing(2, 4, 3),
+        top: '30vh',
+        left: '35vw'
+    },
 });
 
 class Calendar extends Component {
@@ -244,7 +261,9 @@ class Calendar extends Component {
             shiftCounts: [],
             shiftWorkers: [],
             loggedOut: false,
-            userDataRetrieved: false
+            userDataRetrieved: false,
+            modalShifts:[],
+            shiftModalOpen: false
         };
     }
 
@@ -255,14 +274,13 @@ class Calendar extends Component {
 
     routeChange = () => {
         let path = `/Admin`;
-        // console.log(this.props)
         this.props.history.push(path);
     };
 
     getScheduledShiftsForAllUsers = () => {
         dataMethods
             .getScheduledShiftsForAllUsers(
-                format(this.state.currentMonth, "yyyy-MM-d")
+                format(this.state.currentMonth, "yyyy-MM-dd")
             )
             .then(results => {
                 this.setState({
@@ -279,7 +297,7 @@ class Calendar extends Component {
             <Grid container>
                 <Grid container className={this.props.classes.header} spacing={3}>
                     <Grid item xs={4}>
-                        Hello, {this.props.user.first_name}
+                        <Typography className={this.props.classes.headerText}>Hello, {this.props.user.first_name}</Typography>
                     </Grid>
                     <Grid
                         item
@@ -290,7 +308,7 @@ class Calendar extends Component {
                         <ChevronLeft />
                     </Grid>
                     <Grid item xs={2}>
-                        <span>{format(this.state.currentMonth, dateFormat)}</span>
+                        <span className={this.props.classes.headerText}>{format(this.state.currentMonth, dateFormat)}</span>
                     </Grid>
                     <Grid
                         item
@@ -353,22 +371,12 @@ class Calendar extends Component {
 
     handleOpen = (day, thedate) => e => {
         let today = new Date();
-        let shifts = [...this.props.shifts];
-        
-        const shiftIndex = shifts.findIndex(shift =>
-            isSameDay(parseISO(shift.scheduled_date), thedate)
-        );
-        if(shiftIndex>-1) return;
-        if (
-            getDay(thedate) !== 0 &&
-            getDay(thedate) !== 1 &&
-            (isSameDay(today, thedate) || isAfter(thedate, today))
-        ) {
-            this.setState({
-                selectedDate: thedate,
+       
+        let shifts = [...this.props.shifts].filter(shift=> isSameDay(parseISO(shift.scheduled_date),thedate));
 
-                daySelected: day
-            });
+        if (getDay(thedate) !== 0 && getDay(thedate) !== 1 && (isSameDay(today, thedate) || isAfter(thedate, today))) {
+            this.setState({selectedDate: thedate, daySelected: day, modalShifts:shifts},
+            this.setState({shiftModalOpen: true}));
         }
     };
 
@@ -378,7 +386,6 @@ class Calendar extends Component {
         const shiftIndex = shifts.findIndex(shift =>
             isSameDay(parseISO(shift.scheduled_date), day)
         );
-        // console.log(shiftIndex)
         if (shiftIndex > -1) {
             return shifts[shiftIndex].scheduled_shift;
         } else {
@@ -393,17 +400,17 @@ class Calendar extends Component {
         let shifts = [...this.state.selectedShifts];
 
         const shiftIndex = shifts.findIndex(shift =>
-            isSameDay(parse(shift.scheduled_date, "yyyy-MM-d", new Date()), day)
+            isSameDay(parse(shift.scheduled_date, "yyyy-MM-dd", new Date()), day)
         );
 
         if (shiftIndex > -1) {
             isClean = false;
-            if(shiftValue==0){
-                shifts.splice(shiftIndex,1);
-                this.setState({selectedShifts:shifts})
-                if(shifts.length===0) isClean=true;
+            if (shiftValue == 0) {
+                shifts.splice(shiftIndex, 1);
+                this.setState({ selectedShifts: shifts })
+                if (shifts.length === 0) isClean = true;
             }
-            else{
+            else {
                 this.setState(state => {
                     this.state.selectedShifts.map((shift, index) => {
                         if (index === shiftIndex) {
@@ -415,13 +422,13 @@ class Calendar extends Component {
                     });
                 });
             }
-            
+
         } else {
             isClean = false;
             this.setState(state => {
                 const selectedShifts = state.selectedShifts.concat([
                     {
-                        scheduled_date: format(day, "yyyy-MM-d"),
+                        scheduled_date: format(day, "yyyy-MM-dd"),
                         scheduled_shift: shiftValue
                     }
                 ]);
@@ -434,28 +441,47 @@ class Calendar extends Component {
         this.setState({ daySelected: 0, calendarClean: isClean });
     };
 
-    cancelShift = day => {
-        console.log(day)
-        this.props.removeUserShift(format(day,'yyyy-MM-d'), this.props.user.UID);
-        this.setState({calendarClean:true})
+    cancelShift = shiftID => {
+        this.props.removeUserShift(shiftID, this.props.user.UID)
+        .then(this.loadUserData())
+        // this.setState({ calendarClean: true })
+    }
+    
+    saveDayShifts = shiftData =>{
+        let shiftsToSave =[]
+        shiftData.shifts.map(shift=>{
+            if(!shift.scheduled) {this.cancelShift(shift.scheduled_shift_ID)}
+            else{
+                shiftsToSave.push(shift)
+            }
+        })
+        if(shiftsToSave.length>0){
+            this.props.saveUserShifts(shiftsToSave, shiftData.scheduledDate, shiftData.locationID, this.props.user.UID)
+            .then(
+                setTimeout(()=>
+                {
+                    this.loadUserData()
+                }, 1500)
+            )
+        }
     }
 
-    saveUserShifts = () => {
-        this.state.selectedShifts.forEach(shift => {
-            const scheduledShiftIndex = this.props.shifts.findIndex(
-                scheduledShift => {
-                    return scheduledShift.scheduled_date === shift.scheduled_date;
-                }
-            );
-            if (scheduledShiftIndex > -1) {
-                shift.scheduled_shift_ID = this.props.shifts[
-                    scheduledShiftIndex
-                ].scheduled_shift_ID;
-            }
-        });
-        this.props.saveUserShifts(this.state.selectedShifts, this.props.user.UID);
-        this.setState({ calendarClean: true });
-    };
+    // saveUserShifts = () => {
+    //     this.state.selectedShifts.forEach(shift => {
+    //         const scheduledShiftIndex = this.props.shifts.findIndex(
+    //             scheduledShift => {
+    //                 return scheduledShift.scheduled_date === shift.scheduled_date;
+    //             }
+    //         );
+    //         if (scheduledShiftIndex > -1) {
+    //             shift.scheduled_shift_ID = this.props.shifts[
+    //                 scheduledShiftIndex
+    //             ].scheduled_shift_ID;
+    //         }
+    //     });
+    //     this.props.saveUserShifts(this.state.selectedShifts, this.props.user.UID);
+    //     this.setState({ calendarClean: true });
+    // };
 
     cancel = () => {
         this.setState({ selectedShifts: [], calendarClean: true });
@@ -512,7 +538,7 @@ class Calendar extends Component {
         const endDate = endOfWeek(monthEnd);
         const dateFormat = "d";
         const monthFormat = "MM"
-        const dayFormat = "yyyy-MM-d";
+        const dayFormat = "yyyy-MM-dd";
         const dateToday = new Date();
         const rows = [];
 
@@ -527,21 +553,10 @@ class Calendar extends Component {
                 const cloneDay = day;
                 let volunteered = [];
 
-                const shiftIndex = this.props.shifts.findIndex(shift => {
-                    return isSameDay(
-                        parse(shift.scheduled_date, dayFormat, new Date()),
-                        day
-                    );
-                });
-
-                const selectedShiftIndex = this.state.selectedShifts.findIndex(
-                    shift => {
-                        return isSameDay(
-                            parse(shift.scheduled_date, dayFormat, new Date()),
-                            day
-                        );
-                    }
-                );
+        
+                const dayShifts = this.props.shifts.filter(shift=>{
+                    return isSameDay(parseISO(shift.scheduled_date),day)
+                })
 
                 let isClosedDay = getDay(day) === 0 || getDay(day) === 1;
                 let isDayInCurrentMonth =
@@ -571,30 +586,15 @@ class Calendar extends Component {
                             )}
                         >
                             <span className={classes.number}>{formattedDate}</span>
-                            {shiftIndex > -1 && selectedShiftIndex === -1 && (
-                                <div
-                                    className={classes.cellTextContent}
-                                >
-                                    {this.getShiftLabel(
-                                        this.props.shifts[shiftIndex].scheduled_shift.toString()
-                                    )}
+                            {dayShifts.map(shift=>{
+                                return(
+                                <div className={classes.cellTextContent} key={shift.scheduled_shift_ID}>
+                                    {shift.shift_text}{shift.location===1?'(St.J.)':'(GN)'}
                                 </div>
-                            )}
-                            {selectedShiftIndex > -1 && (
-                                <div
-                                    className={classes.cellTextContent}
-                                >
-                                    {this.getShiftLabel(
-                                        this.state.selectedShifts[
-                                            selectedShiftIndex
-                                        ].scheduled_shift.toString()
-                                    )}
-                                </div>
-                            )}
-                            {shiftIndex > -1 && (
-                                <div className={isBefore(day,startOfDay(dateToday))?classes.hidden:classes.cellTextContent} onClick={()=> this.cancelShift(cloneDay)}>Cancel Shift</div>
-        
-                            )}
+                                )
+                            })}
+                          
+                        
                             <div
                                 className={classNames(
                                     classes.cellTextContent,
@@ -602,168 +602,8 @@ class Calendar extends Component {
                                 )}
                             >
                                 Closed
-              </div>
-                            {/* {this.state.adminMode && volunteered.length > 0 && (
-                                <div>
-                                    <div
-                                        className={
-                                            volunteered.findIndex(shift => {
-                                                return shift.scheduled_shift === 1;
-                                            }) < 0
-                                                ? classes.hidden
-                                                : ""
-                                        }
-                                    >
-                                        5am - 10am:{" "}
-                                        {volunteered.findIndex(shift => {
-                                            return shift.scheduled_shift === 1;
-                                        }) > -1
-                                            ? volunteered[
-                                                volunteered.findIndex(shift => {
-                                                    return (shift.scheduled_shift = 1);
-                                                })
-                                            ].scheduled
-                                            : ""}
-                                    </div>
-                                    <div
-                                        className={
-                                            volunteered.findIndex(shift => {
-                                                return shift.scheduled_shift === 2;
-                                            }) < 0
-                                                ? classes.hidden
-                                                : ""
-                                        }
-                                    >
-                                        10am - 2pm:{" "}
-                                        {volunteered.findIndex(shift => {
-                                            return shift.scheduled_shift === 2;
-                                        }) > -1
-                                            ? volunteered[
-                                                volunteered.findIndex(shift => {
-                                                    return (shift.scheduled_shift = 2);
-                                                })
-                                            ].scheduled
-                                            : ""}
-                                    </div>
-                                    <div
-                                        className={
-                                            volunteered.findIndex(shift => {
-                                                return shift.scheduled_shift === 3;
-                                            }) < 0
-                                                ? classes.hidden
-                                                : ""
-                                        }
-                                    >
-                                        2pm - 4pm:{" "}
-                                        {volunteered.findIndex(shift => {
-                                            return shift.scheduled_shift === 3;
-                                        }) > -1
-                                            ? volunteered[
-                                                volunteered.findIndex(shift => {
-                                                    return (shift.scheduled_shift = 3);
-                                                })
-                                            ].scheduled
-                                            : ""}
-                                    </div>
-                                    <div
-                                        className={
-                                            volunteered.findIndex(shift => {
-                                                return shift.scheduled_shift === 4;
-                                            }) < 0
-                                                ? classes.hidden
-                                                : ""
-                                        }
-                                    >
-                                        4pm - 7pm:{" "}
-                                        {volunteered.findIndex(shift => {
-                                            return shift.scheduled_shift === 4;
-                                        }) > -1
-                                            ? volunteered[
-                                                volunteered.findIndex(shift => {
-                                                    return (shift.scheduled_shift = 4);
-                                                })
-                                            ].scheduled
-                                            : ""}
-                                    </div>
-                                    <div
-                                        className={
-                                            volunteered.findIndex(shift => {
-                                                return shift.scheduled_shift === 5;
-                                            }) < 0
-                                                ? classes.hidden
-                                                : ""
-                                        }
-                                    >
-                                        8am - 4pm:{" "}
-                                        {volunteered.findIndex(shift => {
-                                            return shift.scheduled_shift === 5;
-                                        }) > -1
-                                            ? volunteered[
-                                                volunteered.findIndex(shift => {
-                                                    return (shift.scheduled_shift = 5);
-                                                })
-                                            ].scheduled
-                                            : ""}
-                                    </div>
-                                    
-                                </div>
-                            )} */}
-                        </div>
-
-                        {isDayInCurrentMonth &&
-                            <div
-                                className={classNames(
-                                    classes.extraContent,
-                                    this.state.daySelected === formattedDate
-                                        ? ""
-                                        : classes.hiddenContent
-                                )}
-                            >
-                                <FormControl className={classes.formControl}>
-
-                                    <Select
-                                        labelId="demo-simple-select-label"
-                                        id="demo-simple-select"
-                                        value={this.getShiftValue(cloneDay) || ""}
-                                        onChange={this.handleShiftChange(cloneDay)}
-                                        onClick={e => e.stopPropagation()}
-                                        classes={{ root: classes.selectControl }}
-                                    >
-                                        <MenuItem value={"0"}>Select a shift</MenuItem>
-                                        <MenuItem
-                                            value={"1"}
-                                            className={this.checkShifts(cloneDay, 6, 1, false)}
-                                        >
-                                            5am - 10am
-                  </MenuItem>
-                                        <MenuItem
-                                            value={"2"}
-                                            className={this.checkShifts(cloneDay, 6, 2, false)}
-                                        >
-                                            10am - 2pm
-                  </MenuItem>
-                                        <MenuItem
-                                            value={"3"}
-                                            className={this.checkShifts(cloneDay, 6, 3, false)}
-                                        >
-                                            2pm - 4pm
-                  </MenuItem>
-                                        <MenuItem
-                                            value={"4"}
-                                            className={this.checkShifts(cloneDay, 3, 4, true)}
-                                        >
-                                            4pm - 7pm
-                  </MenuItem>
-                                        <MenuItem
-                                            value={"5"}
-                                            className={this.checkShifts(cloneDay, 6, 5, true)}
-                                        >
-                                            8am - 4pm
-                  </MenuItem>
-                                    </Select>
-                                </FormControl>
                             </div>
-                        }
+                        </div>
                     </div>
                 );
                 day = addDays(day, 1);
@@ -826,10 +666,8 @@ class Calendar extends Component {
     };
 
     loadUserData = () => {
-        // console.log(this.state.currentMonth)
-        // console.log(this.state.currentMonth, this.state.dayFormat)
         this.props.getUserData(
-            format(this.state.currentMonth, "yyyy-MM-d"),
+            format(this.state.currentMonth, "yyyy-MM-dd"),
             this.props.user.UID
         );
     };
@@ -845,7 +683,7 @@ class Calendar extends Component {
             this.loadUserData
         );
     };
-    
+
     prevMonth = () => {
         let prevMonth = addMonths(this.state.currentMonth, -1);
         this.setState(
@@ -856,6 +694,11 @@ class Calendar extends Component {
             this.loadUserData
         );
     };
+
+    handleShiftSelectionClose = () => {
+        this.setState({ shiftModalOpen: false })
+    }
+   
 
     render() {
         if (this.state.loggedOut) {
@@ -868,6 +711,10 @@ class Calendar extends Component {
                     {this.renderHeader()}
                     {this.renderCells()}
                     {this.renderFooter()}
+                    {this.state.shiftModalOpen &&
+                      <ShiftSelectDialog dialogOpen={this.state.shiftModalOpen} dialogClose={this.handleShiftSelectionClose} saveShifts={this.saveDayShifts} dateSelected={format(this.state.selectedDate,'yyyy-MM-dd')} shifts={this.state.modalShifts}/>
+                    }
+                 
                 </div>
             );
         } else {
@@ -878,7 +725,7 @@ class Calendar extends Component {
 Calendar.propTypes = {
     classes: propTypes.object.isRequired,
     saveUserShifts: propTypes.func.isRequired,
-    removeUserShift:propTypes.func.isRequired,
+    removeUserShift: propTypes.func.isRequired,
     getUserData: propTypes.func.isRequired
 };
 
