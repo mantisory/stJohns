@@ -113,7 +113,12 @@ const dataMethods = (function() {
             return res;
         })
     },
-
+    checkPassword:(payload)=>{
+        return axios.post('/api/checkPassword',payload);
+    },
+    changePassword:(payload)=>{
+        return axios.post('/api/changePassword', payload);
+    },
     emailValidate: payload => {
       return axios.post("/api/emailValidate", payload);
     },

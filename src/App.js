@@ -13,11 +13,11 @@ import LoginForm from './components/LoginForm'
 import Register from './components/Register'
 import Validate from './components/Validate'
 import PasswordReset from './components/PasswordReset';
+import ChangePassword from './components/ChangePassword';
 import Admin from './components/Admin';
 import dataMethods from './utils/data'
 import { connect } from 'react-redux';
 import { renewSession } from './actions/login'
-import PasswordReset from './components/PasswordReset';
 
 const theme = createMuiTheme({
     typography: {
@@ -62,6 +62,11 @@ const theme = createMuiTheme({
             root: {
                 width: '100%',
             },
+        },
+        MuiButton:{
+            root:{
+                border:'1px solid #630e09'
+            },
         }
     }
 });
@@ -101,6 +106,7 @@ function App(props) {
                     <Route path="/Register" component={Register} />
                     <Route path="/Validate" component={Validate} />
                     <Route path="/PasswordReset" component={PasswordReset} />
+                    <Route path="/ChangePassword" component={ChangePassword} />
                 </Router>
             </div>
 
