@@ -141,8 +141,9 @@ function ShiftSelectDialog(props) {
                             </Grid>
                         </Grid>
                         <Grid container>
-                            <Grid item xs={6}><Button onClick={cancel} color="secondary">Cancel</Button></Grid>
-                            <Grid item xs={6}><Button onClick={saveShifts} color="primary">Save</Button></Grid>
+                            <Grid item xs={8}/>
+                            <Grid item xs={2}><Button onClick={cancel} color="secondary">Cancel</Button></Grid>
+                            <Grid item xs={2}><Button onClick={saveShifts} color="primary">Save</Button></Grid>
                         </Grid>
                     </Grid>
                 </Grid>

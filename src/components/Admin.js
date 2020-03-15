@@ -205,7 +205,8 @@ const styles = theme => ({
         fontWeight: 'bold'
     },
     calendarButton: {
-        top: '50%'
+        top: '50%',
+        border:'none'
     },
     weeklyCalendar: {
         top: 10,
@@ -267,7 +268,7 @@ class Admin extends Component {
             userAdminSaved: false,
             usersDeleted: false,
             goHome: false,
-            calendarView: 'daily',
+            calendarView: 'weekly',
             currentDay: new Date(),
             addUserDialogOpen:false,
         };
@@ -927,7 +928,7 @@ class Admin extends Component {
                         <Grid>
                             <Grid container className={classes.titleContainer}>
                                 <Grid item xs={12}>
-                                    <Typography variant="h5">Below is a list of all volunteers. You can set them to be administrators by clicking the checkbox and clicking save at the bottom right.</Typography>
+                                    <Typography variant="h6">Below is a list of all volunteers. You can set them to be administrators and/or staff by clicking the checkbox and clicking save at the bottom right.</Typography>
                                 </Grid>
                             </Grid>
                             <Grid className={classes.userContainer}>

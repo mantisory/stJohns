@@ -36,7 +36,8 @@ const theme = createMuiTheme({
             light: '#428e92',
             main: '#e2d8ce',
             dark: '#00363a',
-            contrastText: '#630e09'
+            contrastText: '#630e09',
+            background:'red'
         },
         secondary: {
             light: '#ffb04c',
@@ -67,6 +68,10 @@ const theme = createMuiTheme({
             root:{
                 border:'1px solid #630e09'
             },
+            textPrimary:{
+                background:'#e2d8ce',
+                color:'#00363a'
+            }
         }
     }
 });
