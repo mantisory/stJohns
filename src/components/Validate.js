@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, Redirect } from "react-router-dom";
 import dataMethods from "../utils/data";
 import { makeStyles, withTheme, Grid, Typography } from "@material-ui/core";
 
@@ -30,8 +30,11 @@ function Validate(props) {
         email: params.get("email"),
         verificationCode: params.get("code")
     };
-
-    if (updated == 0) {
+    useEffect(() => {
+        setUpdated(1)
+    });
+    
+    if (updated == 0 && payload.email && payload.verificationCode) {
         dataMethods.emailValidate(payload).then(result => {
             let resultCode = JSON.parse(result.data).data
             if (resultCode === 200) {
@@ -40,13 +43,11 @@ function Validate(props) {
                 setError(result.data.error)
             }
         });
-
+    }else{
+        return <Redirect to="/" push={true}/>
     }
 
-    useEffect(() => {
-        setUpdated(1)
-    })
-
+   
     return (
 
         <div className={classes.content}>
