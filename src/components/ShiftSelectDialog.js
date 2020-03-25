@@ -75,9 +75,9 @@ function ShiftSelectDialog(props) {
 
     }
     
-    // useEffect(()=>{
-    //     changeLocation(user.defaultLocation)
-    // },[user])
+    useEffect(()=>{
+        changeLocation(user.defaultLocation)
+    },[user])
     
     useEffect(() => {
         if (props.shifts.length > 0) {

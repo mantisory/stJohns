@@ -20,6 +20,9 @@ const dataMethods = (function() {
     getLocationShifts:(locationID,dayValue)=>{
         return axios.get("/api/getShiftsForLocationAndDay?locationID="+locationID+"&dayValue="+dayValue)
     },
+    getAllAvailableShifts:()=>{
+        return axios.get("/api/getAllAvailableShifts");
+    },
     getScheduledShifts: (currentDate, UID) => {
       return axios.get(
         // nodeServer +nodePort +
@@ -90,7 +93,26 @@ const dataMethods = (function() {
         return "success";
       });
     },
+    checkUsersExist:(users)=>{
+        let newUsers = [];
+        let existingUsers = [];
 
+        let usersProcessed = users.map(user=>{
+            return axios.get('/api/checkUserExists?username='+user.username+'&email='+user.email).then(response=>{
+                console.log(response)
+                if(response.data[0].userExists===1){
+                    existingUsers.push(user)
+                }else{
+                    newUsers.push(user)
+                }
+                return user
+            })
+
+        })
+        return Promise.all(usersProcessed).then(res=>{
+            return {existingUsers, newUsers}
+        })
+    },
     userRegister: payload => {
       return axios.post("/api/userRegister", payload);
     },
@@ -122,11 +144,9 @@ const dataMethods = (function() {
     emailValidate: payload => {
       return axios.post("/api/emailValidate", payload);
     },
-
     setIsAuthenticated: val => {
       isAuth = val;
     },
-
     isAuthenticated: () => {
       const cookie = Cookies.get("stJohnsCookie");
       if (cookie) {

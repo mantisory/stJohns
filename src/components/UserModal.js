@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogActions, DialogContent, DialogTitle, RadioGroup, Radio, Grid, Button, TextField, Checkbox, FormLabel, FormControl, FormControlLabel } from '@material-ui/core'
+import { Dialog, DialogActions, DialogContent, DialogTitle, RadioGroup, Radio, Grid, Button, TextField, Checkbox, FormLabel, FormControl, FormControlLabel,Link } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
-
+import UploadUsers from './UploadUsers'
 const useStyles = makeStyles(theme => ({
     dialog: {
         minHeight: 600
@@ -11,6 +11,9 @@ const useStyles = makeStyles(theme => ({
     },
     margin: {
         margin: theme.spacing(1)
+    },
+    link:{
+        color:'#000'
     }
 }))
 function UserModal(props) {
@@ -28,10 +31,12 @@ function UserModal(props) {
     }
 
     const [user, setUser] = useState(initialState);
+    const [UserUpload, setUserUpload] = useState(false)
     
     const resetDialog=()=>{
-setUser(initialState)
+        setUser(initialState)
     }
+
     const handleChange = prop => event => {
         if(prop==='isAdmin'||prop==='isStaff'){
             setUser({...user,[prop]:event.target.checked})
@@ -46,11 +51,17 @@ setUser(initialState)
     const saveUser = () => {
        props.dialogSaveUser(user);
     }
-
+    const uploadUsers = () => {
+        setUserUpload(true);
+    }
+    const closeUserUpload = () => {
+        setUserUpload(false)
+    }
 
     return (
         <Dialog open={props.open} onEnter={resetDialog} onClose={props.dialogClose} className={classes.dialog} >
-            <DialogTitle className={classes.dialogTitle}>Fill in all fields and click save to add a user.</DialogTitle>
+            <DialogTitle className={classes.dialogTitle}>Fill in all fields and click save to add a user. 
+            Alternatively, you can upload users in a .csv by clicking <Link href="#" onClick={uploadUsers} className={classes.link}>here</Link>.</DialogTitle>
             <DialogContent>
                 <Grid container>
                     <Grid item xs={12}>
@@ -103,6 +114,7 @@ setUser(initialState)
                         </Grid>
                     </Grid>
                 </Grid>
+                <UploadUsers open={UserUpload} dialogClose={closeUserUpload}></UploadUsers>
             </DialogContent>
             <DialogActions>
                 <Button onClick={cancel}>Cancel</Button>

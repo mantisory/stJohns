@@ -7,7 +7,7 @@ import { withStyles } from "@material-ui/core/styles";
 import dataMethods from "../utils/data";
 import propTypes from "prop-types";
 import classnames from "classnames";
-import { Select } from "@material-ui/core";
+import { Select, InputLabel } from "@material-ui/core";
 import FormControl from "@material-ui/core/FormControl";
 import { MenuItem } from "material-ui";
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
@@ -32,7 +32,7 @@ const styles = theme => ({
   },
   content: {
     margin: "0 auto",
-    paddingTop: 150,
+    paddingTop: 50,
     position: "relative"
   },
   instructions: {
@@ -51,6 +51,9 @@ selectControl: {
 },
 formControl:{
     width:'100%'
+},
+registerForm:{
+    marginTop:50
 }
 });
 class Register extends Component {
@@ -166,12 +169,15 @@ class Register extends Component {
               button. All fields are required.
             </Typography>
           </Grid>
-<form>
+<form className={classes.registerForm}>
         <Grid item xs={12}>
             <Grid container className={classes.formContainer}>
-            <Grid item xs={3}>
+            <Grid item xs={5}>
             <FormControl className={classes.formControl}>
                 <MuiThemeProvider>
+                <InputLabel shrink id="demo-simple-select-placeholder-label-label">
+          Default Location
+        </InputLabel>
                 <Select
                   label="Default Location"
                   onChange={event => this.setValue(event, "location")}
@@ -190,7 +196,7 @@ class Register extends Component {
         </Grid>
           <Grid item xs={12}>
             <Grid container className={classes.formContainer} alignItems="flex-start" justify="flex-end" direction="row">
-              <Grid item xs={3}>
+              <Grid item xs={5}>
                 <TextField
                   label="Username"
                   onChange={event => this.setValue(event, "username")}
@@ -201,7 +207,7 @@ class Register extends Component {
                   fullWidth
                 />
               </Grid>
-              <Grid item xs={9}  className={classes.errorGridItem}>
+              <Grid item xs={7}  className={classes.errorGridItem}>
                 <Typography
                   className={classnames(
                     classes.error,
@@ -215,7 +221,7 @@ class Register extends Component {
           </Grid>
           <Grid item xs={12}>
             <Grid container className={classes.formContainer}>
-              <Grid item xs={3}>
+              <Grid item xs={5}>
                 <TextField
                   helperText="Enter your First Name"
                   label="First Name"
@@ -228,7 +234,7 @@ class Register extends Component {
           </Grid>
           <Grid item xs={12}>
             <Grid container className={classes.formContainer}>
-              <Grid item xs={3}>
+              <Grid item xs={5}>
                 <TextField
                   helperText="Enter your Last Name"
                   label="Last Name"
@@ -241,7 +247,7 @@ class Register extends Component {
           </Grid>
           <Grid item xs={12}>
             <Grid container className={classes.formContainer}>
-              <Grid item xs={3}>
+              <Grid item xs={5}>
                 <TextField
                   helperText="Enter your Email"
                   type="email"
@@ -254,7 +260,7 @@ class Register extends Component {
                   fullWidth
                 />
               </Grid>
-              <Grid item xs={9} className={classes.errorGridItem}>
+              <Grid item xs={7} className={classes.errorGridItem}>
                 <Typography
                   className={classnames(
                     classes.error,
@@ -276,7 +282,7 @@ class Register extends Component {
           </Grid>
           <Grid item xs={12}>
             <Grid container className={classes.formContainer}>
-              <Grid item xs={3}>
+              <Grid item xs={5}>
                 <TextField
                   type="password"
                   helperText="Enter your Password"

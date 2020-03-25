@@ -15,7 +15,7 @@ const styles = theme => ({
     },
     content: {
         margin: "0 auto",
-        paddingTop: 150,
+        paddingTop: 50,
         position: "relative"
     },
     instructions: {
@@ -112,18 +112,19 @@ class LoginForm extends Component {
                 <div className={classes.content}>
                     {/* <AppBar title="Login"></AppBar> */}
                     <Grid container>
-                        <Grid item xs={2}/>
+                        <Grid item xs={4}/>
                         
-                        <Grid item xs={8}>
+                        <Grid item xs={4}>
                             <Typography variant="h6" className={classes.instructions}>
-                                Please enter your username and password, and click the "Login" button below. If you do not have an account, click the 'register' button.
+                                Please enter your username and password, and click the "Login" button below. 
+                                If you do not have an account, please contact St. John's directly.
                             </Typography>
                         </Grid>
-                        <Grid item xs={2}/>
+                        <Grid item xs={4}/>
                     </Grid>
                     <form onSubmit={event => this.handleClick(event)}>
                         <Grid container spacing={3}>
-                            <Grid item xs={2} />
+                            <Grid item xs={4} />
                             <Grid item xs={4}>
                                 <TextField
                                     fullWidth
@@ -131,13 +132,13 @@ class LoginForm extends Component {
                                     onChange={event => this.setValue(event, "username")}
                                 />
                             </Grid>
-                            <Grid item xs={4}>
+                            <Grid item xs={2}>
                                 <Typography className={this.state.userNameError ? classes.errorVisible : classes.errorHidden}>{this.state.errorMessage}</Typography>
                             </Grid>
                             <Grid item xs={2} />
                         </Grid>
                         <Grid container spacing={3}>
-                            <Grid item xs={2} />
+                            <Grid item xs={4} />
                             <Grid item xs={4}>
                                 <TextField fullWidth
                                     label="Password:"
@@ -145,7 +146,7 @@ class LoginForm extends Component {
                                     onChange={event => this.setValue(event, "password")}
                                 />
                             </Grid>
-                            <Grid item xs={4}>
+                            <Grid item xs={2}>
                                 <Typography className={this.state.passwordError ? classes.errorVisible : classes.errorHidden}>{this.state.errorMessage}. Click <Link to="/passwordReset">here</Link>  to reset it.</Typography>
                             </Grid>
                             <Grid item xs={2} />
@@ -156,19 +157,19 @@ class LoginForm extends Component {
                             <Grid item xs={4} />
                         </Grid>
                         <Grid container spacing={3} className={classes.buttonContainer}>
-                            <Grid item xs={4}/>
+                            <Grid item xs={7}/>
                             
                             <Grid item xs={1}>
                                 <Button label="Submit" type="submit">
                                     Log In
                                 </Button>
                             </Grid>
-                            <Grid item xs={1} >
+                            {/* <Grid item xs={1} >
                                 <Link to="/Register" className={classes.link}>
                                     <Button>Register</Button>
                                 </Link>
-                            </Grid>
-                            <Grid item xs={6}/>
+                            </Grid> */}
+                            <Grid item xs={4}/>
                         </Grid>
                     </form>
                 </div>

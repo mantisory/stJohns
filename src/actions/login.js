@@ -1,7 +1,7 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 import { SET_CURRENT_USER, SET_CURRENT_USER_FAIL } from "./types";
-import { getUserData } from "./getUserData";
+import { getUserData, getAvailableShifts} from "./getUserData";
 import dataMethods from "../utils/data";
 import { format } from "date-fns";
 const nodeServer = "http://localhost:";
@@ -17,7 +17,7 @@ export function setCurrentUser(user) {
 export function loginError(){
     return{
         type: SET_CURRENT_USER_FAIL,
-        error:'you are fucked'
+        error:'user login fail'
     }
 }
 export function setCurrentUserFail(error) {
@@ -44,7 +44,8 @@ export function renewSession(cookie) {
                   defaultLocation:results.data.defaultLocation
                 })
               );
-              dispatch(getUserData(format(new Date(),'yyyy-MM-dd'),results.data.UID))
+              dispatch(getUserData(format(new Date(),'yyyy-MM-dd'),results.data.UID));
+              dispatch(getAvailableShifts())
         }else{
             dispatch(loginError())
         }

@@ -18,7 +18,7 @@ import {
 import { withStyles } from "@material-ui/core/styles";
 import { ChevronLeft, ChevronRight } from "@material-ui/icons";
 import DateFnsUtils from "@date-io/date-fns";
-import { format, addDays, subDays, startOfWeek, isSameDay, parseISO, addWeeks, getMonth, isThisMonth } from "date-fns";
+import { format, addDays, subDays, startOfWeek, isSameDay, parseISO, addWeeks, getMonth, isThisMonth, getDay, isAfter} from "date-fns";
 import {
     MuiPickersUtilsProvider,
     KeyboardDatePicker
@@ -38,6 +38,7 @@ import {
     DialogActions
 } from "@material-ui/core";
 import UserModal from './UserModal'
+import AddShifts from './AddShifts'
 
 // import { blue } from "@material-ui/core/colors";
 // const useStyles = makeStyles({
@@ -271,6 +272,8 @@ class Admin extends Component {
             calendarView: 'weekly',
             currentDay: new Date(),
             addUserDialogOpen:false,
+            addShiftsDialogOpen:false,
+            addShiftsUser:null
         };
     }
 
@@ -310,7 +313,12 @@ class Admin extends Component {
     setPage = page => {
         this.setState({ currentUserPageNumber: page }, () => this.paginateUsers());
     };
-
+    addShiftsClose = ()=>{
+        this.setState({addShiftsOpen:false})
+    }
+    addShiftsForUser = user =>{
+        this.setState({addShiftsOpen:true,addShiftsUser:user})
+    }
     compareValues = (key, order) => {
         return function innerSort(a, b) {
             if (!a.hasOwnProperty(key) || !b.hasOwnProperty(key)) return 0;
@@ -643,7 +651,7 @@ class Admin extends Component {
         const classes = this.props.classes;
         let shiftTimeSlot = 0;
         let timeSlotAdded = false;
-        if (dailyShifts.length === 0) return <Grid item xs={12} className={classes.shiftUser}>There are no shifts scheduled</Grid>
+        if (dailyShifts.length === 0) return <Grid item xs={12} className={classes.shiftUser}></Grid>
         return (
             dailyShifts.map(shift => {
 
@@ -742,13 +750,9 @@ class Admin extends Component {
         const weekStart = startOfWeek(this.state.currentDay, { weekStartsOn: 1 })
         const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         let days = [];
-        let sortedShiftData = this.props.monthlyShiftData.sort((a, b) => {
-            return a.scheduled_shift > b.scheduled_shift ? 1 : b.scheduled_shift > a.scheduled_shift ? -1 : 0
-        })
-
         for (let i = 1; i < 6; i++) {
-            let theDate = addDays(weekStart, i);
-            let dailyShifts = sortedShiftData.filter(shift => {
+            let theDate = addDays(weekStart, i-1);
+            let dailyShifts = this.props.monthlyShiftData.filter(shift => {
                 return isSameDay(new Date(shift.scheduled_date), theDate) && shift.locationID === locationID
             })
 
@@ -756,7 +760,7 @@ class Admin extends Component {
 
                 <Grid item xs={1} className={classes.dayCell} key={'cell' + i} >
                     <Grid container style={{ position: 'inherit' }}>
-                        <Grid item xs={12} className={classNames(classes.dayHeading, i === 0 ? classes.dayHeadingFirst : i === 6 ? classes.dayHeadingLast : '')}>{format(theDate, 'EEE, MMM do')} </Grid>
+                        <Grid item xs={12} className={classNames(classes.dayHeading, i === 0 ? classes.dayHeadingFirst : i === 6 ? classes.dayHeadingLast : '')}>{format(addDays(theDate,1), 'EEE, MMM do')} </Grid>
                         {this.getDailyShifts(dailyShifts)}
 
                     </Grid>
@@ -993,7 +997,7 @@ class Admin extends Component {
                                         <Grid container key={user.UID}>
                                             <Grid container className={classes.itemContainer}>
                                                 <Grid item xs={2} className={classes.gridItem}>
-                                                    {user.username}
+                                                    <Typography onClick={()=>this.addShiftsForUser(user)}>{user.username}</Typography>
                                                 </Grid>
                                                 <Grid item xs={3} className={classes.gridItem}>
                                                     {user.email}
@@ -1045,10 +1049,14 @@ class Admin extends Component {
                                         <a onClick={this.nextUserPage}><ChevronRight /></a>
                                     </div>
                                 </Grid>
-
+                                {this.state.addShiftsOpen &&
+                                <AddShifts dialogOpen={this.state.addShiftsOpen} addShiftsDialogClose={this.addShiftsClose} user={this.state.addShiftsUser}/>
+                                }
+                                
                             </Grid>
                             <Grid>{this.renderFooter()}</Grid>
                         </Grid>
+                    
                     )}
                 </div>
             );

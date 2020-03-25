@@ -30,10 +30,10 @@ function Validate(props) {
         email: params.get("email"),
         verificationCode: params.get("code")
     };
-    useEffect(() => {
-        setUpdated(1)
-    });
-    
+    // useEffect(() => {
+    //     setUpdated(1)
+    // },[]);
+
     if (updated == 0 && payload.email && payload.verificationCode) {
         dataMethods.emailValidate(payload).then(result => {
             let resultCode = JSON.parse(result.data).data
