@@ -33,20 +33,20 @@ const theme = createMuiTheme({
             'default': '#fafafa'
         },
         primary: {
-            light: '#428e92',
+            light: '#ffffff',
             main: '#e2d8ce',
-            dark: '#00363a',
-            contrastText: '#630e09',
-            background:'red'
+            dark: '#b0a79d',
+            contrastText: '#000',
+            background: 'red'
         },
         secondary: {
-            light: '#ffb04c',
-            main: '#630e09',
-            dark: '#bc5100',
-            contrastText: '#310907'
+            light: '#ffedec',
+            main: '#963d30',
+            dark: '#630e08',
+            contrastText: '#000'
         },
         error: {
-            light: '#e57373',
+            light: '#f7acac',
             main: '#f44336',
             dark: '#d32f2f',
             contrastText: '#fff'
@@ -64,13 +64,13 @@ const theme = createMuiTheme({
                 width: '100%',
             },
         },
-        MuiButton:{
-            root:{
-                border:'1px solid #630e09'
+        MuiButton: {
+            root: {
+                border: '1px solid #630e09'
             },
-            textPrimary:{
-                background:'#e2d8ce',
-                color:'#00363a'
+            textPrimary: {
+                background: '#e2d8ce',
+                color: '#00363a'
             }
         }
     }

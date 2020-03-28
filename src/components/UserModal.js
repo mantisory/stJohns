@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogActions, DialogContent, DialogTitle, RadioGroup, Radio, Grid, Button, TextField, Checkbox, FormLabel, FormControl, FormControlLabel,Link } from '@material-ui/core'
+import { Dialog, DialogActions, DialogContent, DialogTitle, RadioGroup, Radio, Grid, Button, TextField, Checkbox, FormLabel, FormControl, FormControlLabel, Link } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 import UploadUsers from './UploadUsers'
 const useStyles = makeStyles(theme => ({
@@ -12,8 +12,8 @@ const useStyles = makeStyles(theme => ({
     margin: {
         margin: theme.spacing(1)
     },
-    link:{
-        color:'#000'
+    link: {
+        color: '#000'
     }
 }))
 function UserModal(props) {
@@ -23,24 +23,25 @@ function UserModal(props) {
         last_name: '',
         username: '',
         email: '',
-        password:'password',
-        location:'0',
+        password: 'password',
+        location: '0',
         isStaff: false,
         isAdmin: false,
-        selfRegister:false
+        selfRegister: false,
+        phone: ''
     }
 
     const [user, setUser] = useState(initialState);
     const [UserUpload, setUserUpload] = useState(false)
-    
-    const resetDialog=()=>{
+
+    const resetDialog = () => {
         setUser(initialState)
     }
 
     const handleChange = prop => event => {
-        if(prop==='isAdmin'||prop==='isStaff'){
-            setUser({...user,[prop]:event.target.checked})
-        }else{
+        if (prop === 'isAdmin' || prop === 'isStaff') {
+            setUser({ ...user, [prop]: event.target.checked })
+        } else {
             setUser({ ...user, [prop]: event.target.value });
         }
     };
@@ -49,7 +50,7 @@ function UserModal(props) {
         props.dialogClose()
     }
     const saveUser = () => {
-       props.dialogSaveUser(user);
+        props.dialogSaveUser(user);
     }
     const uploadUsers = () => {
         setUserUpload(true);
@@ -60,7 +61,7 @@ function UserModal(props) {
 
     return (
         <Dialog open={props.open} onEnter={resetDialog} onClose={props.dialogClose} className={classes.dialog} >
-            <DialogTitle className={classes.dialogTitle}>Fill in all fields and click save to add a user. 
+            <DialogTitle className={classes.dialogTitle}>Fill in all fields and click save to add a user.
             Alternatively, you can upload users in a .csv by clicking <Link href="#" onClick={uploadUsers} className={classes.link}>here</Link>.</DialogTitle>
             <DialogContent>
                 <Grid container>
@@ -78,6 +79,14 @@ function UserModal(props) {
                             <Grid item xs={12}>
                                 <FormControl fullWidth className={classes.margin}>
                                     <TextField id="email" value={user.email} required label="Email address" onChange={handleChange('email')} ></TextField>
+                                </FormControl>
+                            </Grid>
+
+                        </Grid>
+                        <Grid container>
+                            <Grid item xs={12}>
+                                <FormControl fullWidth className={classes.margin}>
+                                    <TextField id="phone" value={user.phone} label="Phone #" onChange={handleChange('phone')} ></TextField>
                                 </FormControl>
                             </Grid>
 

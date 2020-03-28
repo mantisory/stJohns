@@ -1,7 +1,8 @@
-import React, { Component } from "react";
+import React, { Component, createRef } from "react";
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import Grid from "@material-ui/core/Grid";
 import { withStyles } from "@material-ui/core/styles";
-import {Typography} from '@material-ui/core';
+import { Typography } from '@material-ui/core';
 import { ChevronLeft, ChevronRight } from "@material-ui/icons";
 import format from "date-fns/format";
 import addMonths from "date-fns/addMonths";
@@ -17,7 +18,8 @@ import Select from "@material-ui/core/Select";
 import InputLabel from "@material-ui/core/InputLabel";
 import MenuItem from "@material-ui/core/MenuItem";
 import FormControl from "@material-ui/core/FormControl";
-import ShiftSelectDialog from './ShiftSelectDialog';
+import PersonIcon from '@material-ui/icons/Person';
+import NoMeetingRoomIcon from '@material-ui/icons/NoMeetingRoom';
 import Button from "@material-ui/core/Button";
 import { Redirect, withRouter } from "react-router-dom";
 import propTypes from "prop-types";
@@ -25,6 +27,11 @@ import { endOfMonth } from "date-fns/esm";
 import dataMethods from "../utils/data";
 import { connect } from "react-redux";
 import { saveUserShifts, removeUserShift, getUserData } from "../actions/getUserData";
+import UserProfileDialog from "./UserProfileDialog";
+import { Breakpoint, BreakpointProvider } from 'react-socks';
+import DesktopCalendar from './DesktopCalendar'
+import MobileCalendar from './MobileCalendar'
+import { IconButton } from "material-ui";
 
 const styles = theme => ({
     content: {
@@ -39,10 +46,14 @@ const styles = theme => ({
         width: "100%",
         padding: "1em 0 0 0",
     },
-    headerText:{
-        color:theme.palette.primary.contrastText,
-        fontWeight:'bold',
-        fontSize:'1.3em'
+    headerText: {
+        color: theme.palette.primary.contrastText,
+        fontWeight: 'bold',
+        fontSize: '1.3em',
+        [theme.breakpoints.down('sm')]: {
+            fontSize: '.8em',
+            fontWeight: 300
+        }
     },
     instructions: {
         paddingTop: 70,
@@ -69,13 +80,13 @@ const styles = theme => ({
     },
     chevLeft: {
         textAlign: "right",
-        fontWeight:'bold',
-        fontSize:'1.3em'
+        fontWeight: 'bold',
+        fontSize: '1.3em'
     },
     chevRight: {
         textAlign: "left",
-        fontWeight:'bold',
-        fontSize:'1.3em'
+        fontWeight: 'bold',
+        fontSize: '1.3em'
     },
     calendarBody: {
         position: "relative",
@@ -147,7 +158,7 @@ const styles = theme => ({
         position: "absolute"
     },
     disabled: {
-        color: theme.palette.primary.light,
+        color: theme.palette.error.dark,
         pointerEvents: "none",
         background: "#f6f6f6"
     },
@@ -231,7 +242,16 @@ const styles = theme => ({
     },
     adminMode: {
         color: "white",
-        background: theme.palette.secondary.main
+        background: theme.palette.secondary.main,
+        [theme.breakpoints.down('sm')]: {
+            display: 'none'
+        }
+    },
+    profileButton: {
+        [theme.breakpoints.down('sm')]: {
+            width: 50,
+            marginRight: 10
+        }
     },
     paper: {
         position: 'absolute',
@@ -262,8 +282,9 @@ class Calendar extends Component {
             shiftWorkers: [],
             loggedOut: false,
             userDataRetrieved: false,
-            modalShifts:[],
-            shiftModalOpen: false
+            modalShifts: [],
+            shiftModalOpen: false,
+            userProfileOpen: false
         };
     }
 
@@ -271,7 +292,13 @@ class Calendar extends Component {
         dataMethods.userLogout();
         this.setState({ loggedOut: true });
     };
+    userProfile = () => {
+        this.setState({ userProfileOpen: true })
 
+    }
+    handleUserProfileClose = () => {
+        this.setState({ userProfileOpen: false });
+    }
     routeChange = () => {
         let path = `/Admin`;
         this.props.history.push(path);
@@ -295,8 +322,8 @@ class Calendar extends Component {
 
         return (
             <Grid container>
-                <Grid container className={this.props.classes.header} spacing={3}>
-                    <Grid item xs={4}>
+                <Grid container className={this.props.classes.header}>
+                    <Grid item xs={2} >
                         <Typography className={this.props.classes.headerText}>Hello, {this.props.user.first_name}</Typography>
                     </Grid>
                     <Grid
@@ -326,12 +353,16 @@ class Calendar extends Component {
                                 className={this.props.classes.adminMode}
                             >
                                 Administration
-              </Button>
+                            </Button>
                         )}
                     </Grid>
-
                     <Grid item xs={2}>
-                        <Button onClick={this.logout}>Logout</Button>
+                        <MuiThemeProvider><IconButton onClick={this.userProfile} ><PersonIcon /></IconButton></MuiThemeProvider>
+                        {/* <Button onClick={this.userProfile} className={this.props.classes.profileButton}>Profile</Button> */}
+                    </Grid>
+                    <Grid item xs={2}>
+                        <MuiThemeProvider><IconButton onClick={this.logout} ><NoMeetingRoomIcon /></IconButton></MuiThemeProvider>
+                        {/* <Button onClick={this.logout}>Logout</Button> */}
                     </Grid>
                 </Grid>
 
@@ -341,7 +372,7 @@ class Calendar extends Component {
                         day you can volunteer to bring up the selection control.
           </Grid>
                 </Grid>
-            </Grid>
+            </Grid >
         );
     }
 
@@ -371,12 +402,12 @@ class Calendar extends Component {
 
     handleOpen = (day, thedate) => e => {
         let today = new Date();
-       
-        let shifts = [...this.props.shifts].filter(shift=> isSameDay(parseISO(shift.scheduled_date),thedate));
+
+        let shifts = [...this.props.shifts].filter(shift => isSameDay(parseISO(shift.scheduled_date), thedate));
 
         if (getDay(thedate) !== 0 && getDay(thedate) !== 1 && (isSameDay(today, thedate) || isAfter(thedate, today))) {
-            this.setState({selectedDate: thedate, daySelected: day, modalShifts:shifts},
-            this.setState({shiftModalOpen: true}));
+            this.setState({ selectedDate: thedate, daySelected: day, modalShifts: shifts },
+                this.setState({ shiftModalOpen: true }));
         }
     };
 
@@ -443,26 +474,25 @@ class Calendar extends Component {
 
     cancelShift = shiftID => {
         this.props.removeUserShift(shiftID, this.props.user.UID)
-        .then(this.loadUserData())
+            .then(this.loadUserData())
         // this.setState({ calendarClean: true })
     }
-    
-    saveDayShifts = shiftData =>{
-        let shiftsToSave =[]
-        shiftData.shifts.map(shift=>{
-            if(!shift.scheduled) {this.cancelShift(shift.scheduled_shift_ID)}
-            else{
+
+    saveShifts = shiftData => {
+        let shiftsToSave = []
+        shiftData.shifts.map(shift => {
+            if (!shift.scheduled) { this.cancelShift(shift.scheduled_shift_ID) }
+            else {
                 shiftsToSave.push(shift)
             }
         })
-        if(shiftsToSave.length>0){
+        if (shiftsToSave.length > 0) {
             this.props.saveUserShifts(shiftsToSave, shiftData.scheduledDate, shiftData.locationID, this.props.user.UID)
-            .then(
-                setTimeout(()=>
-                {
-                    this.loadUserData()
-                }, 1500)
-            )
+                .then(
+                    setTimeout(() => {
+                        this.loadUserData()
+                    }, 1500)
+                )
         }
     }
 
@@ -530,6 +560,7 @@ class Calendar extends Component {
     };
 
     renderCells() {
+
         const classes = this.props.classes;
         const { currentMonth, selectedDate } = this.state;
         const monthStart = startOfMonth(currentMonth);
@@ -553,9 +584,9 @@ class Calendar extends Component {
                 const cloneDay = day;
                 let volunteered = [];
 
-        
-                const dayShifts = this.props.shifts.filter(shift=>{
-                    return isSameDay(parseISO(shift.scheduled_date),day)
+
+                const dayShifts = this.props.shifts.filter(shift => {
+                    return isSameDay(parseISO(shift.scheduled_date), day)
                 })
 
                 let isClosedDay = getDay(day) === 0 || getDay(day) === 1;
@@ -586,15 +617,15 @@ class Calendar extends Component {
                             )}
                         >
                             <span className={classes.number}>{formattedDate}</span>
-                            {dayShifts.map(shift=>{
-                                return(
-                                <div className={classes.cellTextContent} key={shift.scheduled_shift_ID}>
-                                    {shift.shift_text}{shift.location===1?'(St.J.)':'(GN)'}
-                                </div>
+                            {dayShifts.map(shift => {
+                                return (
+                                    <div className={classes.cellTextContent} key={shift.scheduled_shift_ID}>
+                                        {shift.shift_text}{shift.location === 1 ? '(St.J.)' : '(GN)'}
+                                    </div>
                                 )
                             })}
-                          
-                        
+
+
                             <div
                                 className={classNames(
                                     classes.cellTextContent,
@@ -693,28 +724,36 @@ class Calendar extends Component {
             },
             this.loadUserData
         );
+
     };
 
     handleShiftSelectionClose = () => {
         this.setState({ shiftModalOpen: false })
     }
-   
+
 
     render() {
+
         if (this.state.loggedOut) {
             return <Redirect to="/LoginForm" push={true} />;
         }
         if (this.props.user) {
-            //todo
             return (
                 <div className={this.props.classes.content}>
                     {this.renderHeader()}
-                    {this.renderCells()}
+                    <Breakpoint customQuery="(max-width: 700px)">
+                        <MobileCalendar currentMonth={this.state.currentMonth} saveShifts={this.saveShifts} />
+                    </Breakpoint>
+                    <Breakpoint customQuery="(min-width: 700px)">
+                        {<DesktopCalendar currentMonth={this.state.currentMonth} saveShifts={this.saveShifts} />}
+                    </Breakpoint>
+
                     {this.renderFooter()}
-                    {this.state.shiftModalOpen &&
-                      <ShiftSelectDialog dialogOpen={this.state.shiftModalOpen} dialogClose={this.handleShiftSelectionClose} saveShifts={this.saveDayShifts} dateSelected={format(this.state.selectedDate,'yyyy-MM-dd')} shifts={this.state.modalShifts}/>
+
+                    {this.state.userProfileOpen &&
+                        <UserProfileDialog dialogOpen={this.state.userProfileOpen} dialogClose={this.handleUserProfileClose} />
                     }
-                 
+
                 </div>
             );
         } else {

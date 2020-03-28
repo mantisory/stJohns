@@ -1,27 +1,37 @@
 import React, { useState, useEffect } from 'react'
-import { Dialog, Grid, Typography, Card, CardContent, Button, InputLabel, FormControl, FormGroup, Select, MenuItem, Radio, RadioGroup, Checkbox, FormLabel, FormControlLabel } from '@material-ui/core'
+import {
+    Dialog, Grid, Typography, Card, CardContent, Button, InputLabel, FormControl, FormGroup, Select,
+    MenuItem, Radio, RadioGroup, Checkbox, FormLabel, FormControlLabel
+} from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 import DateFnsUtils from '@date-io/date-fns';
 import {
     MuiPickersUtilsProvider,
-    KeyboardTimePicker,
     KeyboardDatePicker,
 } from '@material-ui/pickers';
-import { addDays, eachDayOfInterval, startOfMonth, endOfMonth, startOfDay, isSunday, format, isBefore, getMonth, getDay, isMonday, isTuesday, isWednesday, isThursday, isFriday, isSaturday } from 'date-fns'
+import {
+    addDays, eachDayOfInterval, startOfMonth, endOfMonth, startOfDay, isSunday, format, isBefore, getMonth, getDay,
+    isMonday
+} from 'date-fns'
 import { useSelector, useDispatch } from 'react-redux'
-import { saveUserShifts } from '../actions/getUserData';
+import { saveUserShifts, saveUserShiftsInRange } from '../actions/getUserData';
+
 
 
 const useStyles = makeStyles(theme => ({
     container: {
-        minHeight: 500,
+        minHeight: 650,
         width: '100%',
         overflowX: 'hidden'
-
     },
     formContainer: {
         paddingLeft: 20,
         paddingRight: 20
+    },
+    formLine: {
+    },
+    instructions: {
+
     },
     buttonContainer: {
         position: 'absolute',
@@ -31,6 +41,10 @@ const useStyles = makeStyles(theme => ({
         "& button": {
             marginRight: 10
         }
+    },
+    positionedText: {
+        position: 'relative',
+        top: 35
     },
     header: {
         background: theme.palette.primary.main,
@@ -72,43 +86,44 @@ function AddShifts(props) {
             friday: { selected: false, selectedShifts: [] },
             saturday: { selected: false, selectedShifts: [] },
         },
+        selectedDaysChanged: false,
         singleDaySelectedShifts: [],
+        rangeSelectedShifts: [],
         currentMonth: getMonth(new Date()),
         disabledDatesInMonthRange: [],
         saveShifts: false
     });
     useEffect(() => {
-        const { selectedDays } = { ...state };
-        const currentSelectedDays = selectedDays;
-        console.log('test')
-        Object.keys(currentSelectedDays).forEach(selectedDay => {
-            if (currentSelectedDays[selectedDay].selected && currentSelectedDays[selectedDay].selectedShifts.length > 0) {
-                const allSelectedDaysInInterval = eachDayOfInterval({ start: state.selectedStartDate, end: state.selectedEndDate }).map(day => {
-                    switch (selectedDay) {
-                        case 'tuesday':
-                            return isTuesday(day) ? day : null;
-                            break;
-                        case 'wednesday':
-                            return isWednesday(day) ? day : null;
-                            break;
-                        case 'thursday':
-                            return isThursday(day) ? day : null;
-                            break;
-                        case 'friday':
-                            return isFriday(day) ? day : null;
-                            break;
-                        case 'saturday':
-                            return isSaturday(day) ? day : null;
-                            break;
-                    }
-                })
-                console.log(allSelectedDaysInInterval)
-            }
-        })
-    }, [state.selectedDays])
+        const daysInWeek = ['tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+        if (state.selectedDaysChanged) {
+            const { selectedDays } = { ...state };
+            const currentSelectedDays = selectedDays;
+
+            let allSelectedShiftsInInterval = [];
+
+            Object.keys(currentSelectedDays).forEach(selectedDay => {
+
+                if (currentSelectedDays[selectedDay].selected && currentSelectedDays[selectedDay].selectedShifts.length > 0) {
+                    const dayOfWeek = daysInWeek.indexOf(selectedDay) + 2;
+                    eachDayOfInterval({ start: state.selectedStartDate, end: state.selectedEndDate }).map(intervalDay => {
+                        if (getDay(intervalDay) === dayOfWeek) {
+                            currentSelectedDays[selectedDay].selectedShifts.forEach(selectedShift => {
+                                allSelectedShiftsInInterval.push({ scheduledDate: format(intervalDay, 'yyyy-MM-dd'), scheduled_shift: selectedShift, locationID: state.location, UID: props.user.UID });
+                                return;
+                            })
+                        }
+                        return null;
+                    })
+                }
+                return;
+            })
+            // console.log(allSelectedShiftsInInterval)
+            setState({ ...state, selectedDaysChanged: false, rangeSelectedShifts: allSelectedShiftsInInterval })
+        }
+    }, [state.selectedDaysChanged])
     useEffect(() => {
         let dateForTheMonth = new Date().setMonth(state.currentMonth)
-        const today = startOfDay(new Date);
+        const today = startOfDay(new Date());
         let invalidDates = eachDayOfInterval({ start: startOfMonth(dateForTheMonth), end: endOfMonth(dateForTheMonth) })
             .filter(day => (isBefore(day, today)))
             .map(day => format(day, 'yyyy-MM-dd'))
@@ -178,7 +193,7 @@ function AddShifts(props) {
             currentSelectedDays[day].selected = false;
         }
 
-        setState({ ...state, selectedDays: currentSelectedDays })
+        setState({ ...state, selectedDays: currentSelectedDays, selectedDaysChanged: true })
 
     }
 
@@ -190,10 +205,18 @@ function AddShifts(props) {
                     <Typography variant="h6">Adding shifts for {props.user.username}</Typography>
                 </div>
                 <Grid container className={classes.formContainer}>
-                    <Grid container spacing={3}>
-
-
-                        <Grid item xs>
+                    <Grid container className={classes.formLine}>
+                        <Grid item xs={2} />
+                        <Grid item xs={8} >
+                            <Typography className={classes.instructions}>In this screen you can add multiple shifts for a selected user. Please select shifts either by a single day, or a date range. Select the days you'd like to schedule and click 'Save'.
+                            Please note - this will add shifts for that user regardless of whether they already have shifts scheduled...
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={2} />
+                    </Grid>
+                    <Grid container spacing={3} className={classes.formLine}>
+                        <Grid item xs={2} />
+                        <Grid item xs={3}>
                             <FormControl className={classes.formControl}>
                                 <InputLabel id="demo-simple-select-label">Location</InputLabel>
                                 <Select
@@ -207,7 +230,8 @@ function AddShifts(props) {
                                 </Select>
                             </FormControl>
                         </Grid>
-                        <Grid item xs>
+                        <Grid item xs={1} />
+                        <Grid item xs={4}>
                             <FormControl component="fieldset" className={classes.formControl}>
                                 <FormLabel component="legend">Add shifts by</FormLabel>
                                 <RadioGroup row aria-label="Add shifts by" name="shiftSelect" value={state.shiftsBy} onChange={handleChange('shiftsBy')}>
@@ -216,11 +240,12 @@ function AddShifts(props) {
                                 </RadioGroup>
                             </FormControl>
                         </Grid>
+                        <Grid item xs={2} />
                     </Grid>
                     <Grid container item xs={12}>
-
                         {state.shiftsBy === 'day' &&
                             <Grid container>
+                                <Grid item xs={2} />
                                 <Grid item xs={3}>
 
                                     <MuiPickersUtilsProvider utils={DateFnsUtils}>
@@ -230,7 +255,7 @@ function AddShifts(props) {
                                             format="yyyy/MM/dd"
                                             margin="normal"
                                             id="date-picker-inline"
-                                            label="Date picker inline"
+                                            label="Date"
                                             value={state.selectedDate}
                                             onChange={handleDateChange('selectedDate')}
                                             KeyboardButtonProps={{
@@ -240,7 +265,8 @@ function AddShifts(props) {
                                         />
                                     </MuiPickersUtilsProvider>
                                 </Grid>
-                                <Grid item  >
+                                <Grid item xs={2} />
+                                <Grid item xs={3}>
                                     <Card variant="outlined" className={classes.dayCard}>
                                         <CardContent>
                                             {availableShifts
@@ -263,11 +289,13 @@ function AddShifts(props) {
                                         </CardContent>
                                     </Card>
                                 </Grid>
+                                <Grid item xs={2} />
                             </Grid>
                         }
                         {state.shiftsBy === 'range' &&
                             <Grid container>
-                                <Grid item xs={4}>
+                                <Grid item xs={2} />
+                                <Grid item xs={3}>
                                     <MuiPickersUtilsProvider utils={DateFnsUtils}>
 
                                         <KeyboardDatePicker
@@ -288,7 +316,8 @@ function AddShifts(props) {
 
                                     </MuiPickersUtilsProvider>
                                 </Grid>
-                                <Grid item xs={4}>
+                                <Grid item xs={2} className={classes.positionedText}>to</Grid>
+                                <Grid item xs={3}>
                                     <MuiPickersUtilsProvider utils={DateFnsUtils}>
 
                                         <KeyboardDatePicker
@@ -307,10 +336,10 @@ function AddShifts(props) {
                                             shouldDisableDate={day => shouldDisableEndDate(day)}
 
                                         />
-
+                                        <Grid item xs={2} />
                                     </MuiPickersUtilsProvider>
                                 </Grid>
-                                <Grid item xs={4} />
+
                                 <Grid item xs={12}>
                                     <FormControl component="fieldset" className={classes.formControl}>
                                         <FormLabel component="legend">Select days</FormLabel>
@@ -392,7 +421,6 @@ function AddShifts(props) {
                                                             <FormControlLabel key={'friday' + shift.shiftID}
                                                                 control={<Checkbox
                                                                     checked={state.selectedDays.friday.selectedShifts.includes(shift.shiftID)}
-                                                                    // checked={false} 
                                                                     onChange={handleRangeShiftSelection('friday')}
                                                                     name={shift.shiftText}
                                                                     value={shift.shiftID}
@@ -436,10 +464,10 @@ function AddShifts(props) {
                     <Grid container className={classes.buttonContainer}>
                         <Button onClick={() => props.addShiftsDialogClose()}>Close</Button>
                         {state.shiftsBy === 'day' &&
-                            <Button onClick={() => dispatch(saveUserShifts(state.singleDaySelectedShifts, format(state.selectedDate, 'yyyy-MM-dd'), state.location, props.user.UID))}>Save</Button>
+                            <Button onClick={() => { dispatch(saveUserShifts(state.singleDaySelectedShifts, format(state.selectedDate, 'yyyy-MM-dd'), state.location, props.user.UID)); props.addShiftsDialogClose() }}>Save</Button>
                         }
                         {state.shiftsBy === 'range' &&
-                            <Button onClick={() => setState({ ...state, saveShifts: true })}>Save</Button>
+                            <Button onClick={() => { dispatch(saveUserShiftsInRange(state.rangeSelectedShifts)); props.addShiftsDialogClose() }}>Save</Button>
                         }
 
 
