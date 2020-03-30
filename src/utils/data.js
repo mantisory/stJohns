@@ -138,7 +138,10 @@ const dataMethods = (function () {
         userRegister: payload => {
             return axios.post("/api/userRegister", payload);
         },
-
+        saveUserProfile: profile => {
+            // console.log(profile)
+            return axios.post('/api/updateUserProfile', profile)
+        },
         saveUserAdmin: userList => {
             let usersUpdated = userList.map(user => {
                 return axios.post("/api/updateUserAdmin", user).then(res => res);
@@ -158,6 +161,7 @@ const dataMethods = (function () {
             })
         },
         checkPassword: (payload) => {
+            console.log(payload)
             return axios.post('/api/checkPassword', payload);
         },
         changePassword: (payload) => {

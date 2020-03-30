@@ -43,11 +43,14 @@ const useStyles = makeStyles(theme => ({
         flexFlow: 'row-reverse'
     },
     formControl: {
-        minWidth: 300,
+        // minWidth: 300,
         marginBottom: 10,
         paddingLeft: 20,
         "& label": {
             paddingLeft: 20
+        },
+        [theme.breakpoints.up('md')]: {
+            minWidth: 300
         }
     },
     error: {
@@ -71,11 +74,10 @@ export default function UserProfileDialog(props) {
         newPassword: '',
         newPasswordConfirm: '',
         newPasswordConfirmError: false,
-        newPasswordConfirmErrorText: 'Passwords do not match.',
-        formInvalid: true,
-        formDirty: false
+        newPasswordConfirmErrorText: 'Passwords do not match.'
     })
     const handleChange = prop => event => {
+
         setState({ ...state, [prop]: event.target.value, formDirty: true })
     }
     const testEmail = event => {
@@ -97,7 +99,7 @@ export default function UserProfileDialog(props) {
             if (result.data[0].passwordCorrect === 1) {
                 setState({ ...state, oldPasswordError: false })
             } else {
-                setState({ ...state, oldPasswordError: true })
+                setState({ ...state, oldPasswordError: true, oldPasswordErrorText: 'Value does not match our records.' })
             }
         })
     }
@@ -111,15 +113,29 @@ export default function UserProfileDialog(props) {
     const handlePhoneChange = value => {
         setState({ ...state, phone: value })
     }
-    useEffect(() => {
-        if (state.formDirty) {
-            if (state.emailError || state.oldPasswordError || state.newPasswordConfirmError) {
-                setState({ ...state, formInvalid: true })
+
+    const saveProfile = () => {
+
+        if (!state.emailError && !state.oldPasswordError && !state.newPasswordConfirmError) {
+            if (state.oldPassword.length > 0) {
+                const userProfile = {
+                    UID: user.UID,
+                    email: state.email,
+                    phone: state.phone,
+                    defaultLocation: state.defaultLocation,
+                    newPassword: state.newPassword === '' ? null : state.newPassword
+                }
+                DataMethods.saveUserProfile(userProfile).then(res => {
+                    props.dialogClose()
+                })
             } else {
-                setState({ ...state, formInvalid: false })
+                setState({ ...state, oldPasswordError: true, oldPasswordErrorText: 'Password is required' })
             }
+
+        } else {
+            //do nothing
         }
-    }, [state.emailError, state.oldPasswordError, state.newPasswordConfirmError])
+    }
     return (
         <Dialog open={props.dialogOpen} onClose={props.dialogClose} className={classes.dialog} maxWidth={'sm'} fullWidth>
             <Grid container className={classes.container}>
@@ -134,7 +150,7 @@ export default function UserProfileDialog(props) {
                                 <Select
                                     id="default-location-select"
                                     value={state.defaultLocation}
-                                    onChange={handleChange('location')}
+                                    onChange={handleChange('defaultLocation')}
 
                                 >
                                     <MenuItem value={1}>St. John's Mission</MenuItem>
@@ -144,18 +160,19 @@ export default function UserProfileDialog(props) {
                         </Grid>
 
                     </Grid>
-                    <Grid item xs={7}>
-                        <FormControl className={classes.formControl}>
+                    <Grid item xs={9} md={7}>
+                        <FormControl className={classes.formControl} required={true}>
                             <InputLabel id="email-label">Your email address:</InputLabel>
                             <Input
                                 id="email"
                                 value={state.email}
                                 onChange={handleChange('email')}
                                 onBlur={testEmail}
+
                             />
                         </FormControl>
                     </Grid>
-                    <Grid item xs={5}>
+                    <Grid item xs={3} md={5}>
                         {state.emailError &&
                             <Typography className={classes.error}>{state.emailErrorText}</Typography>
                         }
@@ -168,8 +185,8 @@ export default function UserProfileDialog(props) {
                     </Grid>
                     <Grid item xs={12} className={classes.changePasswordContainer}>
                         <Grid container >
-                            <Grid item xs={7}>
-                                <FormControl className={classes.formControl}>
+                            <Grid item md={7} xs={9}>
+                                <FormControl className={classes.formControl} required={true}>
                                     <InputLabel id="oldPassword-label">Old Password:</InputLabel>
                                     <Input
                                         id="oldPassword"
@@ -177,6 +194,7 @@ export default function UserProfileDialog(props) {
                                         value={state.oldPassword}
                                         onChange={handleChange('oldPassword')}
                                         onBlur={validatePassword}
+
                                         endAdornment={
                                             <InputAdornment position="end">
                                                 <IconButton
@@ -191,7 +209,7 @@ export default function UserProfileDialog(props) {
                                     />
                                 </FormControl>
                             </Grid>
-                            <Grid item xs={5}>
+                            <Grid item xm={5} xs={3}>
                                 {state.oldPasswordError &&
                                     <Typography className={classes.error}>{state.oldPasswordErrorText}</Typography>
                                 }
@@ -219,7 +237,7 @@ export default function UserProfileDialog(props) {
                                     />
                                 </FormControl>
                             </Grid>
-                            <Grid item xs={7}>
+                            <Grid item md={7} xs={9}>
                                 <FormControl className={classes.formControl}>
                                     <InputLabel id="newPasswordConfirm-label">Confirm New Password:</InputLabel>
                                     <Input
@@ -242,7 +260,7 @@ export default function UserProfileDialog(props) {
                                     />
                                 </FormControl>
                             </Grid>
-                            <Grid item xs={5}>
+                            <Grid item md={5} xs={3}>
                                 {state.newPasswordConfirmError &&
                                     <Typography className={classes.error}>{state.newPasswordConfirmErrorText}</Typography>
                                 }
@@ -255,7 +273,7 @@ export default function UserProfileDialog(props) {
                         <Button onClick={() => props.dialogClose()}>Close</Button>
                     </Grid>
                     <Grid item xs={3}>
-                        <Button onClick={() => props.dialogClose()} disabled={state.formInvalid}>Save</Button>
+                        <Button onClick={() => saveProfile()}>Save</Button>
                     </Grid>
                 </Grid>
             </Grid>

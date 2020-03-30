@@ -56,7 +56,7 @@ const styles = theme => ({
         }
     },
     instructions: {
-        paddingTop: 70,
+        paddingTop: 40,
         fontSize: "1.3em"
     },
     footerVisible: {

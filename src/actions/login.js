@@ -33,6 +33,7 @@ export function renewSession(cookie) {
         return axios
             .get("/api/getUserForToken?token=" + cookie.token)
             .then(results => {
+
                 if (results.data.code !== 204) {
                     dispatch(
                         setCurrentUser({
@@ -51,6 +52,7 @@ export function renewSession(cookie) {
                     dispatch(getAvailableShifts())
                 } else {
                     dispatch(loginError())
+                    return { code: 204 }
                 }
 
             });

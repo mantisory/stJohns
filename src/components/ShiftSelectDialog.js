@@ -18,7 +18,7 @@ const useStyles = makeStyles(theme => ({
             // background: 'red',
             minWidth: 400,
             minHeight: 200
-        }
+        },
     },
     formItem: {
         marginBottom: 20
@@ -90,6 +90,7 @@ function ShiftSelectDialog(props) {
     }
 
     useEffect(() => {
+        console.log('userdata')
         changeLocation(user.defaultLocation)
     }, [user])
 
@@ -144,10 +145,10 @@ function ShiftSelectDialog(props) {
                                 <Grid container>
                                     {availableShifts.map(shift => {
                                         return (
-                                            <Grid item xs={12}>
+                                            <Grid item xs={12} key={shift.shiftID}>
                                                 <FormControlLabel
                                                     control={
-                                                        <Checkbox onChange={handleShiftSelected} value={shift.shiftID} checked={shift.scheduled} />
+                                                        <Checkbox onChange={handleShiftSelected} value={shift.shiftID} checked={shift.scheduled} key={shift.shiftID} />
                                                     }
                                                     label={shift.shiftText}
                                                     key={shift.shiftID}

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Cookies from "js-cookie";
 import propTypes from 'prop-types'
 import './App.css';
@@ -8,6 +8,7 @@ import {
     BrowserRouter as Router,
     Route,
     Redirect,
+    useHistory
 } from "react-router-dom";
 import LoginForm from './components/LoginForm'
 import Register from './components/Register'
@@ -91,10 +92,15 @@ const AdminRoute = ({ component: Component, User, ...rest }) => (
     )} />
 )
 function App(props) {
+    let history = useHistory()
     useEffect(() => {
         const userCookie = Cookies.get('stJohnsCookie');
         if (userCookie) {
-            props.renewSession(JSON.parse(userCookie))
+            props.renewSession(JSON.parse(userCookie)).then(result => {
+                if (result && result.code === 204) {
+                    history.push("/LoginForm");
+                }
+            })
         }
     }, [props.auth])
 
